@@ -1,0 +1,116 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: 'Helvetica Neue', Tahoma, Arial, PingFangSC-Regular, 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+}
+
+input, botton {
+  border: none;
+  outline: none;
+  -webkit-appearance: none;
+  font: inherit;
+}
+
+textarea {
+  color: inherit;
+  font: inherit;
+  border: none;
+}
+
+strong {
+  font-weight: normal;
+}
+
+em {
+  font-style: normal;
+}
+
+.higntlight:active {
+  background-color: #d9d9d9;
+}
+
+body {
+  font-family: "PingFang SC,Helvetica Neue,Helvetica,Arial,Hiragino Sans GB,Heiti SC,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif";
+  color: #333;
+  font-size: 28px;
+  user-select: none;
+  -webkit-text-size-adjust: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.red {
+  color: #dc3b40
+}
+
+.blue {
+  color: #218ddd
+}
+
+.green {
+  color: #38b366
+}
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 33.33%;
+    height: 200px;
+    border-bottom: 1px solid #eee;
+    border-right: 1px solid #eee;
+    &:nth-child(3n) {
+      border-right: 0;
+    }
+    .iconfont {
+      font-size: 90px;
+    }
+    .logo{
+      width: 90px;
+      height: 90px;
+      margin-bottom: 10px;
+    }
+    .info {
+      color: #989898;
+    }
+  }
+}
+@split: '|';
+@keyframes bounce-in {
+  0% {
+    transform: translate3d(0, 0%, 0)
+  }
+  100% {
+    transform: translate3d(0, -100%, 0)
+  }
+}
+
+@keyframes bounce-out {
+  0% {
+    transform: translate3d(0, -100%, 0)
+  }
+  100% {
+    transform: translate3d(0, 0, 0)
+  }
+}
+
+.bounce-enter-active {
+  animation: bounce-in .3s;
+}
+
+.bounce-leave-active {
+  animation: bounce-out .3s;
+}
+
+

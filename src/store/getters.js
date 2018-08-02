@@ -1,0 +1,10 @@
+export const loading = state => state.loading;
+export const ajaxLoading = state => state.ajaxLoading;
+export const playTpl = state => state.playTpl;
+export const playName = state => state.currentPlay.title;
+export const dropping = state => state.dropping;
+export const dropEl = state => state.dropEl;
+export const currentPlay = state => state.currentPlay;
+export const showLogin = state => state.showLogin;
+export const playType = state => state.playType;
+export const currentLottery = state => state.currentLottery;
