@@ -65,7 +65,7 @@
       background: url(../../assets/open_num.png) no-repeat 0 0;
       background-size: 2.5rem auto;
       transform: translateY(0);
-      animation: load .5s infinite ease-in-out;
+      animation: load .5s infinite ease-in;
     }
     .load_ellipse {
       position: absolute;

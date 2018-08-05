@@ -1,3 +1,4 @@
+import "babel-polyfill";
 import Vue from 'vue'
 import App from './App'
 import router from './router'
@@ -9,12 +10,12 @@ const FastClick = require('fastclick')
 FastClick.attach(document.body)
 import './icons'
 import SvgIcon from './base/SvgIcon'
-import Toast  from './base/toast/index'
-Vue.use(Toast)
+import Toast  from './base/toast/index.js'
+Vue.$toast = Vue.prototype.$toast = Toast;
 Vue.component('svg-icon', SvgIcon)
 
-var VueScrollTo = require('vue-scrollto');
-Vue.use(VueScrollTo)
+/*var VueScrollTo = require('vue-scrollto');
+Vue.use(VueScrollTo)*/
 
 import './common/js/validate/index.js'
 

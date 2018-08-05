@@ -36,6 +36,7 @@
 </template>
 
 <script>
+  import axios from 'axios'
   import mixin from 'common/js/mixins/signMixin';
 
   export default {
@@ -53,7 +54,16 @@
       doLogin() {
         this.$validator.validateAll().then((result) => {
           if (result) {
-            console.log(result)
+            axios.post('/users/login', {
+              loginForm: this.login
+            }).then(res => {
+              if(res.data.code == 200){
+                this.$toast(`${res.data.message}`)
+                this.$store.commit('TOGGLE_LOGIN', false)
+              }else if(res.data.code == 201){
+                this.$toast(`${res.data.message}`)
+              }
+            })
           } else {
             this.changeFace('sad')
           }

@@ -18,6 +18,7 @@
     name: 'App',
     components: {
       Login
-    }
+    },
+
   }
 </script>

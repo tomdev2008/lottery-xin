@@ -1,13 +1,13 @@
 <template>
   <div class="number-wrapper">
-    <div v-for="(item, index) in numbers" class="cate-list-hook">
+    <div v-for="(item, index) in numbers" class="cate-list-hook" :data-length="item.length">
       <h5 class="title">{{item.title}}</h5>
 
-      <ul class="ball-list lhc" v-if="gameType == 'lhc'">
+      <ul class="ball-list lhc" v-if="gameType == 'ball'">
         <li class="ball-item"
             :class="{'selected':num.selected}"
             v-for="(num,i) in item.numList"
-            @click="selectNum($event,index,i,num)">
+            @click="selectNum($event, index, i, num, item)">
           <span class="ball" :class="num.color">
             {{num.num}}
           </span>
@@ -33,7 +33,7 @@
             :class="{'selected':num.selected,'clicked':num.clicked}"
             :data-i="i"
             :data-index="index"
-            @click="selectNum($event, index, i)">
+            @click="selectNum($event, index, i,num,item)">
             <div class="top">
               <span class="value">{{num.num}}</span>
               <div class="odds" v-if="num.odds">赔率{{num.odds}}</div>
@@ -73,12 +73,23 @@
       }
     },
     methods: {
-      selectNum(el, index, i) {
+      selectNum(el, index, i, num, item) {
+        let selectedCount = item.numList.filter(v => {
+          return v.selected;
+        }).length;
+        let maxLength = this.numbers[index].length;
         let canDrop;
         if (this.numbers[index].numList[i].selected) {
           this.$set(this.numbers[index].numList[i], 'selected', false);
           canDrop = false;
         } else {
+          if (selectedCount >= maxLength) {
+            this.$toast({
+              text: `${this.numbers[index].title}最多选择${maxLength}个`,
+              showMask: true,
+            })
+            return
+          }
           this.$set(this.numbers[index].numList[i], 'selected', true);
           this.$set(this.numbers[index].numList[i], 'clicked', true);
           this.clickTimer && clearTimeout(this.clickTimer);
@@ -89,13 +100,14 @@
         this.$emit('add', el, {index, i}, this.numbers, canDrop, color)
       },
       beforeEnter(el) {
-        el.style.opacity = 0;
+        el.style.opacity = 0.01;
+        //el.style.transform="rotateY(90deg)"
       },
       enter(el, done) {
-        let iDelay = el.dataset.i * 60;
+        let iDelay = el.dataset.i * 100;
         let indexDelay = iDelay + (el.dataset.index + 1) * 60;
         setTimeout(function () {
-          Velocity(el, {opacity: 1}, {complete: done})
+          Velocity(el, {opacity: 1, rotateY: '0deg'}, {complete: done})
         }, iDelay)
         done()
       },
@@ -115,6 +127,16 @@
     }
   }
 
+  @keyframes titleAni {
+    0% {
+      opacity: 0;
+      transform: translateX(-4%) rotateX(90deg);
+    }
+    1000% {
+      transform: translateX(-4%) rotateX(0);
+    }
+  }
+
   @acticeColor: #dc3b40;
 
   .number-wrapper {
@@ -127,6 +149,8 @@
       line-height: 80px;
       text-align: center;
       transform: translateX(-4%);
+      transform-origin: bottom;
+      animation: titleAni .3s ease-out;
     }
     .list {
       display: flex;
@@ -136,7 +160,7 @@
       color: #fff;
       transform: translateX(-4%);
       &.noTab {
-        .item{
+        .item {
           flex: 1;
         }
       }

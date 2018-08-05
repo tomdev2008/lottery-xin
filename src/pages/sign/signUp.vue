@@ -46,6 +46,7 @@
 </template>
 
 <script>
+  import axios from 'axios';
   import mixin from 'common/js/mixins/signMixin';
 
   export default {
@@ -64,7 +65,13 @@
       doReg() {
         this.$validator.validateAll().then((result) => {
           if (result) {
-            console.log(result)
+            axios.post('/users/reg', {
+              regForm: this.reg
+            }).then(res => {
+              if(res.data.code == 200){
+                this.$toast(`${res.data.message}`)
+              }
+            })
           } else {
             this.changeFace('sad')
           }

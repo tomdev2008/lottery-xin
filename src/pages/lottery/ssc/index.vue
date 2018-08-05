@@ -10,30 +10,29 @@
           </div>
           <div class="bottom">
             <template v-for="num in lottery.data">
-              <open-num :num="num" :animation="animation" :size="size" :color="num.color" :gameType="currentPlay.type"></open-num>
+              <open-num :num="num.num" :animation="animation" :size="size" :color="num.color"></open-num>
             </template>
           </div>
           <div class="his-wrapper" v-click-outside="closeHis" v-if="hisFlag">
-            <dl class="his-list" v-if="hisList.length">
-              <dt class="his-title">
-                <span class="qihao">期号</span>
-                <span class="result">开奖号码</span>
-                <span class="time" v-if="$route.name !== 'PK10'">开奖时间</span>
-              </dt>
-              <dd class="his-item" v-for="(item,index) in hisList">
-                <span class="qihao">{{item.number}}<br/><template
-                  v-if="$route.name == 'PK10'">{{item.kjTime}}</template></span>
-                <span class="result">
+            <table class="his-list" v-if="hisList.length">
+              <tr class="his-title">
+                <td class="qihao">期号</td>
+                <td class="result">开奖号码</td>
+                <td>开奖时间</td>
+              </tr>
+              <tr v-for="(item,index) in hisList">
+                <td class="qihao">{{item.number}}</td>
+                <td class="result">
                   <template v-for="num in item.data">
-                    <open-num :num="num" :size="size"></open-num>
+                    <open-num style="display: inline-block;" :num="num.num" :color="num.color" :size="size"></open-num>
                   </template>
-                </span>
-                <span class="time" v-if="$route.name !== 'PK10'">{{item.kjTime}}</span>
-              </dd>
-            </dl>
+                </td>
+                <td class="time">{{item.kjTime}}</td>
+              </tr>
+            </table>
           </div>
         </div>
-        <div class="lottery-half lottery-next">
+        <div class="lottery-half lottery-next" @click="showDetail">
           <div class="title">
             <span>{{lottery.thisNo}} 期投注截止</span>
           </div>
@@ -49,7 +48,7 @@
     <ellipsis ref="gameTip" :value="gameTip" v-if="gameTip"></ellipsis>
 
     <div class="selectNumber">
-      selectedXNums:{{selectedXNums}}----注数{{count}}
+      selectedXNums:{{selectedXNums}}----selectedLen:{{selectedLen}}----注数{{count}}
       <x-number-list :numbers="xNumbers" :gameType="currentPlay.type" @add="addBasket"></x-number-list>
     </div>
 
@@ -87,19 +86,19 @@
           <transition-group name="list" tag="div">
             <div v-for="(item,index) in previewBetArr" :key="index" class="item">
               <span class="qihao">{{item.actionNo}}</span>
-              <span>{{item.title}}</span>
-              <span>{{item.content}}</span>
-              <span>{{item.count}}</span>
-              <span class="price">{{item.amount * beishu}}</span>
+              <span>{{item.playType}}</span>
+              <span>{{item.actionData}}</span>
+              <span>{{item.actionNum}}</span>
+              <span class="price">{{item.actionNum * beishu}}</span>
               <span class="edit" @click="delectOne(item,index)"><svg-icon iconClass="remove"></svg-icon></span>
             </div>
           </transition-group>
         </div>
       </transition>
       <div class="bet-content" @click="listShow = !listShow">
-        <div class="bet-title">
-          {{betDesc}}
-          <input type="number" minlength="1" maxlength="4" v-model="beishu" @click.stop>
+        <div class="bet-title" @click.stop>
+          <!--{{betDesc}}-->
+          <input type="tel" placeholder="每注金额" minlength="1" maxlength="5" v-model="beishu" @focus="listShow = false">
         </div>
       </div>
       <div :class="checkCls" @click="checkout">
@@ -108,40 +107,56 @@
       </div>
     </footer>
     <shortcut ref="shortcut" @selectMenu="selectMenu" @afterDrop="addPreviewBet" :numbers="xNumbers"></shortcut>
+    <transition name="leftIn">
+      <detail ref="detail" @close="visible=false" v-if="visible"></detail>
+    </transition>
   </div>
 </template>
 
 <script>
   import {sscTpl, syx5Tpl, pk10Tpl, pcddTpl, pl3Tpl} from 'mock/template';
-
+  import {addBet} from 'api/bet.js'
 
   import axios from 'axios';
   import {ssc} from 'common/js/calculate';
   import mixin from 'common/js/mixins/lotteryMixin';
   import XNumberList from 'base/x-number-list/index';
   import Shortcut from 'base/shortcut/index';
-
+  import Detail from './../components/detail';
 
   export default {
     name: "SSC",
     mixins: [mixin],
     components: {
-      XNumberList, Shortcut
+      XNumberList, Shortcut, Detail,
     },
     data() {
       return {
+        visible: false,
         xNumbers: [],
         previewBetArr: [],
         listShow: false,
+        ballColor: '',
       }
     },
     computed: {
       size() {
         return this.$route.name == 'PK10' ? 'small' : '';
-      }
+      },
+      ballColorCom() {
+        if (this.ballColor == 'blue') {
+          return '#218ddd'
+        } else if (this.ballColor == 'green') {
+          return '#38b366'
+        } else if (this.ballColor == 'yellow') {
+          return '#484848'
+        } else {
+          return '#f86469'
+        }
+      },
     },
     watch: {
-      Xlist(newVal) {
+      Xlist(newVal, oldVal) {
         let action = this.currentPlay.action;
         let length = this.currentPlay.length;
         try {
@@ -153,12 +168,18 @@
         }
       },
     },
-    beforeDestroy(){
+    beforeDestroy() {
       clearTimeout(this.getDataTimer)
     },
     methods: {
       checkout() {
-        console.log(this.previewBetArr)
+        //console.log(this.previewBetArr)
+        if (!this.count) return;
+        addBet(this.previewBetArr).then(res => {
+          if (res.code == 200) {
+            this.$toast(`${res.message}`)
+          }
+        })
       },
       delectOne(item, previewIndex) {
         let i = item.i;
@@ -180,12 +201,13 @@
         this.listShow = true;
         console.log(this.previewBetArr, this.xNumbers)
       },
-      addBasket(el, obj, numbers, canDrop) {
+      addBasket(el, obj, numbers, canDrop, color) {
         //console.log(numbers)  //obj索引
+        this.ballColor = color ? color : 'red';
         this.xNumbers = numbers;
         if (canDrop) {
           let ballRect = document.getElementsByClassName('shortcut')[0].getElementsByClassName('current')[0].getBoundingClientRect()
-          this.$refs.shortcut._drop(el.target, obj, ballRect)
+          this.$refs.shortcut._drop(el.target, obj, ballRect, this.ballColorCom)
         } else {
           this.$refs.shortcut._calcCount(this.xNumbers)
         }
@@ -202,6 +224,15 @@
               break;
             case '两面盘':
               this.xNumbers = sscTpl().sscLMP;
+              break;
+          }
+        } else if (this.$route.name == 'FC3D' || this.$route.name == 'PL3') {
+          switch (this.playName) {
+            case '1-3球':
+              this.xNumbers = pl3Tpl().pl31_3
+              break;
+            case '整合':
+              this.xNumbers = pl3Tpl().pl3ZH
               break;
           }
         } else if (this.$route.name == 'PK10') {
@@ -237,7 +268,7 @@
               this.xNumbers = syx5Tpl().syx5ZHIX;
               break;
           }
-        }else if (this.$route.name == 'PCDD') {
+        } else if (this.$route.name == 'PCDD') {
           switch (this.playName) {
             case '特码':
               this.xNumbers = pcddTpl().pcddTM;
@@ -262,14 +293,32 @@
         this.previewBetArr = [];
       },
       getRelData(lottery) {
-        axios.get('/portal/index/getLotteryInfo', {
+        axios.get('/index/getLotteryInfo', {
           params: {
             type: this.$route.params.id,
             lott_id: lottery.actionNo,
           }
         }).then(resp => {
           if (resp.data.code == 1) {
+            let data = resp.data;
+            data.data.data = data.data.data.split(',');//将开奖数据转成数组
+            if (this.$route.name == 'PCDD') {
+              data.data.data = this.normalPCDDData(data.data.data)
+            } else if (this.$route.name == 'PK10') {
+              data.data.data = this.normalPK10Data(data.data.data)
+            } else {
+              let arr = [];
+              data.data.data.forEach(item => {
+                arr.push({
+                  color: '',
+                  num: item,
+                })
+              })
+              data.data.data = arr;
+            }
+            //resp.data.data.data = this.normalLhcList(resp.data.data.data)
             setTimeout(() => {
+              this.lottery.data = data.data.data;
               this.animation = false;
             }, 1000)
             this.getHisResult();
@@ -289,7 +338,23 @@
         }).then(res => {
           this.hisList = res.data;
           this.hisList.forEach(item => {
-            item.data = item.data.split(',')
+            let data = item.data.split(',')
+            if (this.$route.name == 'PCDD') {
+              item.data = this.normalPCDDData(data)
+            } else if (this.$route.name == 'LHC') {
+              item.data = this.normalLhcList(data.join(','))
+            } else if (this.$route.name == 'PK10') {
+              item.data = this.normalPK10Data(data)
+            } else {
+              let arr = [];
+              data.forEach(item => {
+                arr.push({
+                  color: '',
+                  num: item,
+                })
+              })
+              item.data = arr;
+            }
           })
         })
       },
@@ -304,6 +369,9 @@
           }
         })
       },
+      showDetail() {
+        this.visible = true;
+      }
     },
   }
 </script>
@@ -354,39 +422,14 @@
             background: #e1d9bb;
             font-size: 24px;
             .his-list {
+              width: 100%;
               border-top: 1px solid #c3bba2;
               font-size: 28px;
-              .his-title, .his-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 10px;
-                span {
-                  display: flex;
-                  justify-content: center;
-                  &.qihao {
-                    width: 250px;
-                    flex: 0 0 250px;
-                    justify-content: start;
-                  }
-                  &.result {
-                    flex: 0 0 auto;
-                    justify-content: start;
-                  }
-                  &.time {
-                    width: 180px;
-                    flex: 0 0 180px;
-                  }
-                }
-              }
-              .his-title {
-                font-weight: bold;
-                border-bottom: 1px solid #c3bba2;
-              }
-              .his-item {
-                color: #666;
-                &:not(:last-child) {
-                  border-bottom: 1px solid #c3bba2;
+              padding: 0 10px;
+              tr {
+                td, th {
+                  padding: 10px 0;
+                  border-top: 1px solid #eeebda;
                 }
               }
             }
@@ -458,7 +501,22 @@
         background: #575858;
         color: #fff;
         .bet-title {
+          width: 200px;
           font-size: 32px;
+          input[type="tel"] {
+            -webkit-appearance: none;
+            background: none;
+            outline: 0;
+            border: 0;
+            height: 100%;
+            width: 100%;
+            padding: 0 20px;
+            font-size: 32px;
+            color: #fff;
+            &::-webkit-input-placeholder {
+              color: rgba(255, 255, 255, .5);
+            }
+          }
         }
       }
       .preview-wrapper {
@@ -521,7 +579,7 @@
           &.list-enter, &.list-leave-to {
             height: 0;
             font-size: 0;
-            .svg-icon{
+            .svg-icon {
               font-size: 0;
             }
           }
@@ -580,10 +638,11 @@
       }
     }
   }
-  .footer-tab{
+
+  .footer-tab {
     display: flex;
     align-items: center;
-    .tab-item{
+    .tab-item {
       flex: 1;
     }
   }

@@ -80,7 +80,7 @@ export default {
       let total = 0;
       let beishu = this.beishu > 0 ? this.beishu : 1
       this.previewBetArr.forEach(item => {
-        total += item.count * beishu
+        total += item.actionNum * beishu
       })
       return total
     },
@@ -113,15 +113,6 @@ export default {
         })
       }
       return len;
-    },
-    ballColorCom() {
-      if (this.ballColor == 'blue') {
-        return '#218ddd'
-      } else if (this.ballColor == 'green') {
-        return '#38b366'
-      } else {
-        return '#f86469'
-      }
     },
   },
   watch: {
@@ -165,22 +156,72 @@ export default {
       }).then(res => {
         let data = res.data;
         data.data = data.data.split(',');//将开奖数据转成数组
-        if (data.actionName == '北京28') {
-          let sum = data.data.reduce((p, v) => {
-            return (p - 0) + (v - 0);
-          })
-          data.data.splice(1, 0, '+')
-          data.data.splice(3, 0, '+')
-          data.data.splice(5, 0, '=', sum)
-        } else if (data.actionName == '六合彩') {
+        if (this.$route.name == 'PCDD') {
+          data.data = this.normalPCDDData(data.data)
+        } else if (this.$route.name == 'LHC') {
           data.data = this.normalLhcList(data.data.join(','))
+        } else if (this.$route.name == 'PK10') {
+          data.data = this.normalPK10Data(data.data)
+        } else {
+          let arr = [];
+          data.data.forEach(item => {
+            arr.push({
+              color: '',
+              num: item,
+            })
+          })
+          data.data = arr;
         }
 
         this.lottery = data;
+        //console.log(this.lottery)
         this.$store.commit('SET_CURRENT_LOTTERY', data)
         this.startFlag = true;
         this.getRelData(data);
       })
+    },
+    normalPCDDData(data) {
+      let green = [1, 4, 7, 10, 16, 19, 22, 25];
+      let blue = [2, 5, 8, 11, 17, 20, 23, 26];
+      let red = [3, 6, 9, 12, 15, 18, 21, 24];
+      let yellow = [0, 13, 14, 27];
+      let sum = data.reduce((p, v) => {
+        return (p - 0) + (v - 0);
+      })
+      data.splice(1, 0, '+')
+      data.splice(3, 0, '+')
+      data.splice(5, 0, '=', sum)
+      let arr = [];
+      data.forEach(item => {
+        arr.push({
+          color: '',
+          num: item,
+        })
+      })
+      let color;
+      if (green.includes(arr[arr.length - 1].num)) {
+        color = 'green'
+      } else if (blue.includes(arr[arr.length - 1].num)) {
+        color = 'blue'
+      } else if (red.includes(arr[arr.length - 1].num)) {
+        color = 'red'
+      } else if (yellow.includes(arr[arr.length - 1].num)) {
+        color = 'yellow'
+      }
+      arr[arr.length - 1].color = color;
+      return arr;
+    },
+    normalPK10Data(data) {
+      let arr = [];
+      data.forEach(item => {
+
+        let color;
+        arr.push({
+          ...map,
+          num: item,
+        })
+      })
+      return arr;
     },
     normalLhcList(data) {
       let a = []
@@ -223,10 +264,6 @@ export default {
       e.stopPropagation();
       this.hisFlag = false;
     },
-    checkout() {
-      if (!this.count) return;
-      this.$store.commit('TOGGLE_LOGIN', true)
-    }
   },
 
 }

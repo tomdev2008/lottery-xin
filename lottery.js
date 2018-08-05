@@ -1,7 +1,7 @@
 var express = require('express');
 var proxyMiddleware = require('http-proxy-middleware')
 const hostname = '127.0.0.1';
-const port = 5002;
+const port = 6633;
 
 var app = express();
 
@@ -16,19 +16,19 @@ router.get('/', function (req, res, next) {
 var proxyTable = {
   '/game':{
     changeOrigin: true,
-    target:'https://ffcp-wap.com/'
+    target:'https://www.ffcp-wap.com/'
   },
   '/index':{
     changeOrigin: true,
-    target:'https://ffcp-wap.com/'
+    target:'https://www.ffcp-wap.com/'
   },
   '/portal':{
     changeOrigin: true,
-    target:'http://119.28.68.23:9031/'
+    target:'http://119.28.54.66:9031/'
   },
   '/wap':{
     changeOrigin: true,
-    target:'https://ffcp-wap.com/'
+    target:'https://www.ffcp-wap.com/'
   },
 }
 Object.keys(proxyTable).forEach(function (context) {
@@ -42,7 +42,7 @@ Object.keys(proxyTable).forEach(function (context) {
 
 app.use(router);
 
-app.use(express.static('./dist'));
+app.use(express.static('./lottery'));
 
 module.exports = app.listen(port, function (err) {
   if (err) {

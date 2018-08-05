@@ -82,12 +82,12 @@ export default new Router({
         {
           path: 'fc3d/:id',
           name: 'FC3D',
-          component: FC3D,
+          component: SSC,
         },
         {
           path: 'pl3/:id',
           name: 'PL3',
-          component: FC3D,
+          component: SSC,
         },
         {
           path: 'kl8/:id',

@@ -158,7 +158,7 @@ export const pcdd_menu = [
     title: '特码',
     action: 'tz5xDwei',
     length: 1,
-    type: 'lhc'
+    type: 'ball'
   },
   {
     id: 2,
@@ -177,6 +177,7 @@ export const pcdd_menu = [
     title: '特码包三',
     action: 'tz5xDwei',
     length: 3,
+    type: 'ball'
   },
   {
     id: 5,
@@ -189,10 +190,10 @@ export const pcdd_menu = [
 export const lhc_menu = [
   {
     id: 57,
-    title: '正特码',
+    title: '正码特',
     action: 'tz5xDwei',
     length: 1,
-    type: 'lhc'
+    type: 'ball'
   },
   {
     id: 300,
@@ -201,11 +202,34 @@ export const lhc_menu = [
     length: 1,
   },
   {
-    id: 3,
-    title: '连码',
+    id: 301,
+    title: '特肖头尾',
     action: 'tz5xDwei',
     length: 1,
-    type: 'lhc'
+  },
+  {
+    id: 7,
+    title: '平特肖尾',
+    action: 'tz5xDwei',
+    length: 1,
+  },
+  {
+    id: 6,
+    title: '波色',
+    action: 'tz5xDwei',
+    length: 1,
+  },
+  {
+    id: 61,
+    title: '总肖',
+    action: 'tz5xDwei',
+    length: 1,
+  },
+  {
+    id: 9,
+    title: '五行',
+    action: 'tz5xDwei',
+    length: 1,
   },
   {
     id: 4,
@@ -220,29 +244,18 @@ export const lhc_menu = [
     length: 1,
   },
   {
-    id: 6,
-    title: '波色',
+    id: 3,
+    title: '连码',
     action: 'tz5xDwei',
     length: 1,
-  },
-  {
-    id: 7,
-    title: '特肖头尾',
-    action: 'tz5xDwei',
-    length: 1,
+    type: 'ball'
   },
   {
     id: 8,
     title: '自选不中',
     action: 'tz5xDwei',
     length: 1,
-    type: 'lhc'
-  },
-  {
-    id: 9,
-    title: '五行',
-    action: 'tz5xDwei',
-    length: 1,
+    type: 'ball'
   },
 ];
 

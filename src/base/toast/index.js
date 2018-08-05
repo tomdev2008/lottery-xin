@@ -1,40 +1,49 @@
-import ToastTemplate from './toast.vue' // 引入vue模板
-var Toast = {} // 定义插件对象
-Toast.install = function (Vue, options) { // vue的install方法，用于定义vue插件
-  // 如果toast还在，则不再执行
-  if (document.getElementsByClassName('toastBox').length) {
-    return
+import Vue from 'vue';
+import toast from './toast.vue';
+const ToastConstructor = Vue.extend(toast);
+let removeDom = event => {
+  console.log('removeDom')
+  if (event.target.parentNode) {
+    event.target.parentNode.removeChild(event.target);
   }
-  let toastTpl = Vue.extend(ToastTemplate) // 创建vue构造器
-  let instance = new toastTpl() // 实例化vue实例
-  // 用$el来访问元素，并插入到body中
-  let tpl = instance.$mount().$el
+};
 
-  Vue.prototype.$toast = { // 在Vue的原型上添加实例方法，以全局调用
-    show(options) { // 控制toast显示的方法
-      return new Promise((resolve,reject)=>{
-        document.body.appendChild(tpl)
-        if (typeof options === 'string') { // 对参数进行判断
-          instance.text = options // 传入props
-        }
-        else if (typeof options === 'object') {
-          Object.assign(instance, options) // 合并参数与实例
-        }
-        instance.show = true // 显示toast
-        setTimeout(function () {
-          instance.show = false;
-          setTimeout(() => {
-            resolve(instance)
-          }, 0);
-        }, instance.duration)
-      })
-    },
-    hide() { // 控制toast隐藏的方法
-      instance.show = false
-    }
+ToastConstructor.prototype.close = function () {
+  this.show = false;
+  this.$el.addEventListener('transitionend', removeDom);
+  this.$el.addEventListener('animate', removeDom);
+  this.closed = true;
+};
+let Toast = (options = {}) => {
+  let duration = options.duration || 2000;
+
+  let instance = new ToastConstructor();
+  Object.assign(instance, options)
+  instance.closed = false;
+  clearTimeout(instance.timer);
+  instance.text = typeof options === 'string' ? options : options.text;
+  instance.position = options.position || 'center';
+  let tpl = instance.$mount().$el
+  if (document.getElementById('toast-box')) {
+    document.getElementById('toast-box').appendChild(tpl)
+  } else {
+    var toastBox = document.createElement('div')
+    toastBox.setAttribute('id', 'toast-box')
+    toastBox.appendChild(tpl)
+    document.body.appendChild(toastBox)
   }
-}
-if (typeof window !== 'undefined' && window.Vue) {
-    Toast.install(window.Vue);
-}
+
+  instance.show = true // 显示toast
+  Vue.nextTick(function () {
+    instance.show = true;
+    instance.$el.removeEventListener('transitionend', removeDom);
+    if (duration) {
+      instance.timer = setTimeout(function () {
+        if (instance.closed) return;
+        instance.close();
+      }, duration)
+    }
+  });
+  return instance;
+};
 export default Toast;

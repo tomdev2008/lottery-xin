@@ -427,7 +427,7 @@ let pcddBS = () => {
 let pcddTMBS = () => {
   return [
     {
-      title: '特码包三', numList: pcddNumList(), balls: balls()
+      title: '特码包三', numList: pcddNumList(), balls: balls(),length: 3
     },
   ]
 }

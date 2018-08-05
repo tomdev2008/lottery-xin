@@ -1,10 +1,13 @@
 <template>
-  <transition name="zoom" enter-active-class="animated zoomIn" leave-active-class="animated zoomOut">
-    <div class="message-box" v-show="show">
-      <svg-icon :iconClass="icon" class="icon" v-if="icon"/>
-      <span class="text">{{text}}</span>
-    </div>
-  </transition>
+  <div>
+    <div class="mask" v-if="showMask && show"></div>
+    <transition name="zoom" enter-active-class="animated zoomIn" leave-active-class="animated zoomOut">
+      <div class="message-box" v-show="show">
+        <svg-icon :iconClass="icon" class="icon" v-if="icon"/>
+        <span class="text">{{text}}</span>
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script>
@@ -12,6 +15,10 @@
     props: {
       show: { // 是否显示此toast
         default: false
+      },
+      showMask: {
+        type: Boolean,
+        default: false,
       },
       text: { // 提醒文字
         default: 'loading'
@@ -28,11 +35,19 @@
 </script>
 
 <style lang="less" scoped>
+  .mask{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4999;
+  }
   .message-box {
     position: fixed;
     top: 50%;
     left: 50%;
-    z-index: 5000;
+    z-index: 50000;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -40,7 +55,7 @@
     max-width: 80%;
     min-width: 200px;
     min-height: 100px;
-    padding: 30px;
+    padding: 30px 40px;
     transform: translate(-50%, -50%);
     border-radius: 24px;
     background: rgba(0, 0, 0, .85);

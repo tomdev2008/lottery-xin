@@ -14,25 +14,28 @@
             </template>
           </div>
           <div class="his-wrapper" v-click-outside="closeHis" v-if="hisFlag">
-            <dl class="his-list" v-if="hisList.length">
-              <dt class="his-title">
-                <span class="qihao">期号</span>
-                <span class="result">开奖号码</span>
-              </dt>
-              <dd class="his-item" v-for="(item,index) in hisList">
-                <span class="qihao">{{item.number}}<br/>{{item.kjTime}}</span>
-                <span class="result">
+            <table class="his-list" v-if="hisList.length">
+              <tr>
+                <th class="qihao">期号</th>
+                <th class="result">开奖号码</th>
+                <th class="result">开奖时间</th>
+              </tr>
+              <tr v-for="(item,index) in hisList">
+                <td class="qihao">{{item.number}}</td>
+                <td class="result">
                   <template v-for="num in item.data">
                     <open-num
+                      style="display: inline-block"
                       :num="num.num"
                       :color="num.color"
                       :ani="num.ani"
                       size="small">
                     </open-num>
                   </template>
-                </span>
-              </dd>
-            </dl>
+                </td>
+                <td>{{item.kjTime}}</td>
+              </tr>
+            </table>
           </div>
         </div>
         <div class="lottery-half lottery-next">
@@ -82,16 +85,16 @@
             <span>玩法</span>
             <span>投注内容</span>
             <span>注数</span>
-            <span>金额</span>
+            <span class="price">金额 <strong class="total">{{totalPrice}}元</strong></span>
             <span class="edit"></span>
           </div>
           <transition-group name="list" tag="div">
             <div v-for="(item,index) in previewBetArr" :key="index" class="item">
               <span class="qihao">{{item.actionNo}}</span>
-              <span>{{item.title}}</span>
-              <span>{{item.content}}</span>
-              <span>{{item.count}}</span>
-              <span>{{item.amount}}</span>
+              <span>{{item.playType}}</span>
+              <span>{{item.actionData}}</span>
+              <span>{{item.actionNum}}</span>
+              <span class="price">{{item.actionNum * beishu}}</span>
               <span class="edit" @click="delectOne(item,index)"><svg-icon iconClass="remove"></svg-icon></span>
             </div>
           </transition-group>
@@ -145,13 +148,21 @@
       {num: '尾大', odds: '1.980'}, {num: '尾小', odds: '1.980'}, {num: '家禽', odds: '1.901'}, {num: '野兽', odds: '1.980'},
       {num: '红波', odds: '2.795'}, {num: '绿波', odds: '2.970'}, {num: '蓝波', odds: '2.970'}];
   };
-  let bsList = () => {
+  let bsList1 = () => {
     return [
       {num: '红波', odds: '2.970'}, {num: '绿波', odds: '2.970'}, {num: '蓝波', odds: '2.970'},
+    ];
+  };
+  let bsList2 = () => {
+    return [
       {num: '红大', odds: '1.960'}, {num: '绿大', odds: '1.960'}, {num: '蓝大', odds: '1.960'},
       {num: '红小', odds: '1.960'}, {num: '绿小', odds: '1.960'}, {num: '蓝小', odds: '1.960'},
       {num: '红单', odds: '1.960'}, {num: '绿单', odds: '1.960'}, {num: '蓝单', odds: '1.960'},
       {num: '红双', odds: '1.980'}, {num: '绿双', odds: '1.980'}, {num: '蓝双', odds: '1.980'},
+    ];
+  };
+  let bsList3 = () => {
+    return [
       {num: '红大单', odds: '1.980'}, {num: '绿大单', odds: '1.980'}, {num: '蓝大单', odds: '1.901'},
       {num: '红大双', odds: '1.980'}, {num: '绿大双', odds: '2.795'}, {num: '蓝大双', odds: '2.970'},
       {num: '红小单', odds: '2.970'}, {num: '绿小单', odds: '2.970'}, {num: '蓝小单', odds: '2.970'},
@@ -190,6 +201,20 @@
     },
       {num: '4尾', odds: '5.107'}, {num: '5尾', odds: '5.107'}, {num: '6尾', odds: '5.107'}, {num: '7尾', odds: '5.107'},
       {num: '8尾', odds: '5.107'}, {num: '9尾', odds: '5.107'}];
+  };
+  let zongXList1 = () => {
+    return [
+      {num: '2肖', odds: '14.107'}, {num: '3肖', odds: '14.107'}, {num: '4肖', odds: '14.107'}, {
+        num: '5肖',
+        odds: '14.107'
+      },
+      {num: '6肖', odds: '14.107'}, {num: '7肖', odds: '14.107'}
+    ]
+  };
+  let zongXList2 = () => {
+    return [
+      {num: '总肖单', odds: '1.941'}, {num: '总肖双', odds: '1.812'}
+    ]
   };
   let xiaoList = () => {
     return [{num: '鼠', egs: [11, 23, 35, 47], odds: '5.107'}, {num: '牛', egs: [12, 24, 36, 48], odds: '5.107'}, {
@@ -240,6 +265,7 @@
   import mixin from 'common/js/mixins/lotteryMixin';
   import XNumberList from 'base/x-number-list/index';
   import Shortcut from 'base/shortcut/index';
+  import {addBet} from 'api/bet.js'
 
   export default {
     name: "LHC",
@@ -268,11 +294,9 @@
         try {
           let result = lhc[action](newVal, length);
           this.count = result.actionNum;
-          console.log(result)
+          console.log('result',result)
         } catch (e) {
           this.count = 0;
-          this.selectTip = e.tip;
-          //console.log(result)
         }
       },
     },
@@ -327,7 +351,7 @@
       },
       setTpl(playName) {
         switch (playName) {
-          case '正特码':
+          case '正码特':
             this.xNumbers = [
               {title: '正一码', numList: numList(), balls: balls()},
               {title: '正二码', numList: numList(), balls: balls()},
@@ -351,67 +375,33 @@
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
-          case '连码':
+          case '特肖头尾':
             this.xNumbers = [
-              {title: '四全中', numList: numList(), balls: balls(), length: 4},
-              {title: '三全中', numList: numList(), balls: balls(), length: 3},
-              {title: '三中二', numList: numList(), balls: balls(), length: 3},
-              {title: '二中二', numList: numList(), balls: balls(), length: 2},
-              {title: '二中特', numList: numList(), balls: balls(), length: 2},
-              {title: '特串', numList: numList(), balls: balls(), length: 2},
+              {title: '生肖', numList: lmList(), balls: balls()},
+              {title: '头号', numList: lmList(), balls: balls()},
+              {title: '尾号', numList: lmList(), balls: balls()},
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
-          case '连肖':
+          case '平特肖尾':
             this.xNumbers = [
-              {title: '二肖连', numList: xiaoList(), balls: balls(), length: 2},
-              {title: '三肖连', numList: xiaoList(), balls: balls(), length: 3},
-              {title: '四肖连', numList: xiaoList(), balls: balls(), length: 4},
-              {title: '五肖连', numList: xiaoList(), balls: balls(), length: 5},
-            ];
-            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
-            break;
-          case '连尾':
-            this.xNumbers = [
-              {title: '二尾碰', numList: weiList(), balls: balls(), length: 2},
-              {title: '三尾碰', numList: weiList(), balls: balls(), length: 3},
-              {title: '四尾碰', numList: weiList(), balls: balls(), length: 4},
-              {title: '五尾碰', numList: weiList(), balls: balls(), length: 5},
+              {title: '生肖', numList: xiaoList(), balls: balls()},
+              {title: '尾号', numList: weiList(), balls: balls()},
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
           case '波色':
             this.xNumbers = [
-              {title: '四全中', numList: bsList(), balls: balls(), length: 4},
+              {title: '三色波', numList: bsList1(), balls: balls()},
+              {title: '半波', numList: bsList2(), balls: balls()},
+              {title: '半半波', numList: bsList3(), balls: balls()},
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
-          case '特肖头尾':
+          case '总肖':
             this.xNumbers = [
-              {title: '特肖', numList: xiaoList(), balls: balls()},
-              {title: '特头', numList: touList(), balls: balls()},
-              {title: '特尾', numList: weiList(), balls: balls()},
-            ];
-            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
-            break;
-          case '平肖头尾':
-            this.xNumbers = [
-              {title: '特肖', numList: xiaoList(), balls: balls()},
-              {title: '特头', numList: touList(), balls: balls()},
-              {title: '特尾', numList: weiList(), balls: balls()},
-            ];
-            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
-            break;
-          case '自选不中':
-            this.xNumbers = [
-              {title: '五不中', numList: numList(), balls: balls(), length: 5},
-              {title: '六不中', numList: numList(), balls: balls(), length: 5},
-              {title: '七不中', numList: numList(), balls: balls(), length: 5},
-              {title: '八不中', numList: numList(), balls: balls(), length: 5},
-              {title: '九不中', numList: numList(), balls: balls(), length: 5},
-              {title: '十不中', numList: numList(), balls: balls(), length: 5},
-              {title: '十一不中', numList: numList(), balls: balls(), length: 5},
-              {title: '十二不中', numList: numList(), balls: balls(), length: 5},
+              {title: '总肖数', numList: zongXList1(), balls: balls()},
+              {title: '单双', numList: zongXList2(), balls: balls()},
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
@@ -421,12 +411,54 @@
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
+          case '连肖':
+            this.xNumbers = [
+              {title: '二肖连', numList: xiaoList(), balls: balls(), length: 6},
+              {title: '三肖连', numList: xiaoList(), balls: balls(), length: 6},
+              {title: '四肖连', numList: xiaoList(), balls: balls(), length: 6},
+              {title: '五肖连', numList: xiaoList(), balls: balls(), length: 6},
+            ];
+            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
+            break;
+          case '连尾':
+            this.xNumbers = [
+              {title: '二尾碰', numList: weiList(), balls: balls(), length: 6},
+              {title: '三尾碰', numList: weiList(), balls: balls(), length: 6},
+              {title: '四尾碰', numList: weiList(), balls: balls(), length: 6},
+              {title: '五尾碰', numList: weiList(), balls: balls(), length: 6},
+            ];
+            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
+            break;
+          case '连码':
+            this.xNumbers = [
+              {title: '四全中', numList: numList(), balls: balls(), length: 10},
+              {title: '三全中', numList: numList(), balls: balls(), length: 10},
+              {title: '三中二', numList: numList(), balls: balls(), length: 10},
+              {title: '二中二', numList: numList(), balls: balls(), length: 10},
+              {title: '二中特', numList: numList(), balls: balls(), length: 10},
+              {title: '特串', numList: numList(), balls: balls()},
+            ];
+            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
+            break;
+          case '自选不中':
+            this.xNumbers = [
+              {title: '五不中', numList: numList(), balls: balls(), length: 5},
+              {title: '六不中', numList: numList(), balls: balls(), length: 6},
+              {title: '七不中', numList: numList(), balls: balls(), length: 7},
+              {title: '八不中', numList: numList(), balls: balls(), length: 8},
+              {title: '九不中', numList: numList(), balls: balls(), length: 9},
+              {title: '十不中', numList: numList(), balls: balls(), length: 10},
+              {title: '十一不中', numList: numList(), balls: balls(), length: 11},
+              {title: '十二不中', numList: numList(), balls: balls(), length: 12},
+            ];
+            this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
+            break;
         }
         //获取玩法提示
         this.getGameTip(this.currentPlay.id)
       },
       getRelData(lottery) {
-        axios.get('/portal/index/getLotteryInfo', {
+        axios.get('/index/getLotteryInfo', {
           params: {
             type: this.$route.params.id,
             lott_id: lottery.actionNo,
@@ -473,9 +505,14 @@
       },
 
       checkout() {
+        //console.log(this.previewBetArr)
         if (!this.count) return;
-        this.$store.commit('TOGGLE_LOGIN', true)
-      }
+        addBet(this.previewBetArr).then(res => {
+          if (res.code == 200) {
+            this.$toast(`${res.message}`)
+          }
+        })
+      },
     },
   }
 </script>
@@ -538,36 +575,12 @@
             background: #e1d9bb;
             font-size: 24px;
             .his-list {
+              width: 100%;
               border-top: 1px solid #c3bba2;
               font-size: 26px;
-              .his-title, .his-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 10px;
-                span {
-                  display: flex;
-                  width: 80px;
-                  justify-content: center;
-                  &.qihao {
-                    width: 220px;
-                    flex: 0 0 220px;
-                    justify-content: start;
-                  }
-                  &.result {
-                    flex: 1;
-                    justify-content: start;
-                  }
-                }
-              }
-              .his-title {
-                font-weight: bold;
-                border-bottom: 1px solid #c3bba2;
-              }
-              .his-item {
-                color: #666;
-                &:not(:last-child) {
-                  border-bottom: 1px solid #c3bba2;
+              tr {
+                td,th {
+                  padding: 10px 0;
                 }
               }
             }
@@ -636,22 +649,6 @@
           padding-left: 30px;
         }
       }
-      .ball {
-        position: absolute;
-        left: 60px;
-        bottom: 40px;
-        z-index: 2000;
-        border-radius: 50%;
-        transition: all .5s cubic-bezier(0.49, -0.52, 0.75, 0.41);
-        .inner {
-          width: 44px;
-          height: 44px;
-          background: -webkit-gradient(linear, left top, left bottom, from(#f86469), color-stop(75%, #bf1f24));
-          background: linear-gradient(to bottom, #f86469, #bf1f24 75%);
-          border-radius: 50%;
-          transition: all .5s linear;
-        }
-      }
       .bet-content {
         position: relative;
         z-index: 1;
@@ -716,7 +713,11 @@
             transition: height 0.2s
           }
           &.list-enter, &.list-leave-to {
-            height: 0
+            height: 0;
+            font-size: 0;
+            .svg-icon {
+              font-size: 0;
+            }
           }
         }
       }
@@ -767,4 +768,11 @@
     }
   }
 
+  .footer-tab {
+    display: flex;
+    align-items: center;
+    .tab-item {
+      flex: 1;
+    }
+  }
 </style>

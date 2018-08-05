@@ -175,7 +175,6 @@
           height += item.clientHeight;
           this.listHeight.push(height);
         }
-        console.log(this.listHeight)
       },
       onShortcutTouchStart(e) {
         let firstTouch = e.touches[0];
@@ -212,6 +211,7 @@
       },
       _calcCount(numbers) {
         let selectedArr = []
+        //console.log('numbers', this.$store.getters.playName)
         numbers.forEach((number, index) => {
           let count = 0;
           number.numList.forEach((item, i) => {
@@ -220,14 +220,21 @@
               count++;
               map['index'] = index;
               map['i'] = i;
-              map['title'] = number.title;
-              map['odds'] = item.odds;
-              map['count'] = 1;
-              map['content'] = item.num;
-              map['amount'] = 1;
-              map['gameType'] = this.$route.params.id;
-              map['actionNo'] = this.$store.getters.currentLottery.actionNo;
-              map['actionTime'] = this.$store.getters.currentLottery.actionTime;
+              map['beiShu'] = this.beiShu || 1;
+              map['playType'] = this.$store.getters.playName;
+              map['playId'] = 1;
+              map['subPlayType'] = number.title;
+              map['subPlayId'] = 83;
+              map['bonusProp'] = item.odds;
+              map['actionNum'] = 1;
+              map['actionData'] = item.num;
+              map['actionAmount'] = map['beiShu'] * 1;
+              map['actionFun'] = 'actionFun';
+              map['betTime'] = new Date().getTime();
+              map['gameId'] = this.$route.params.id;
+              map['gameName'] = this.$store.getters.currentLottery.actionName;
+              map['actionNo'] = this.$store.getters.currentLottery.thisNo;
+              map['kjTime'] = this.$store.getters.currentLottery.lastTime;
               selectedArr.push(map)
             }
           })

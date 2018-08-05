@@ -1,26 +1,32 @@
 <template>
-  <header class="lottery-header">
-    <div class="header-wrapper">
-      <div class="header-left">
-
+  <header :class="$style.lotteryHeader">
+    <div :class="$style.headerWrapper">
+      <div :class="$style.headerLeft" @click="back">
+        <svg-icon iconClass="back" :class="$style.back"></svg-icon>
       </div>
-      <div class="header-center">
+      <div :class="$style.headerCenter">
         <slot></slot>
       </div>
-      <div class="header-right"></div>
+      <div :class="$style.headerRight"></div>
     </div>
   </header>
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
-    export default {
-        name: 'l-header',
-    }
+  import {mapGetters} from 'vuex'
+
+  export default {
+    name: 'l-header',
+    methods: {
+      back(){
+        this.$emit('back')
+      },
+    },
+  }
 </script>
 
-<style lang="less" scoped>
-  .lottery-header {
+<style lang="less" module>
+  .lotteryHeader {
     position: fixed;
     top: 0;
     left: 0;
@@ -30,14 +36,20 @@
     background: #ec0022;
     color: #fff;
     text-align: center;
-    .header-wrapper {
+    .headerWrapper {
       display: flex;
       height: 100%;
-      .header-left {
+      .headerLeft {
         width: 120px;
         flex: 0 0 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .back {
+          font-size: 40px;
+        }
       }
-      .header-center {
+      .headerCenter {
         position: relative;
         flex: 1;
         display: flex;
@@ -45,7 +57,7 @@
         justify-content: center;
         font-size: 38px;
       }
-      .header-right {
+      .headerRight {
         width: 120px;
         flex: 0 0 120px;
         display: flex;

@@ -40,10 +40,7 @@ export const tz5xDwei = function (numbers, codeLen) {
     return number.length >= 1
   })
   if (!flag) {
-    throw({
-      tip: '请选择' + codeLen + '个号码',
-      selectedLen: dLen
-    });
+    return
   } else {
     numbers.forEach((number, index) => {
       if (number.length == 0) {
@@ -86,7 +83,7 @@ export const ssc = {
 }
 
 export const lhc = {
-  lhcFun, tzAllSelect
+  lhcFun, tzAllSelect, tz5xDwei
 }
 
 

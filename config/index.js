@@ -36,6 +36,14 @@ module.exports = {
         changeOrigin: true,
         target: 'https://wpub1dkjflsdakjfsdkgdfjsdfj.com/'
       },
+      '/bets': {
+        changeOrigin: true,
+        target: 'http://localhost:3000/'
+      },
+      '/users': {
+        changeOrigin: true,
+        target: 'http://localhost:3000/'
+      },
     },
 
     // Various Dev Server settings

@@ -138,7 +138,7 @@
     },
     mounted() {
       if (!this.$route.params.id) {
-        this.$toast.show('参数错误').then(res => {
+        this.$toast('参数错误').then(res => {
           this.$router.push({path: '/'});
         })
       } else {
