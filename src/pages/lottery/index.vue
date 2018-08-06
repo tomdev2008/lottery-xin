@@ -48,7 +48,26 @@
     <router-view class="lottery-main" :key="$route.fullpath"></router-view>
 
     <div v-transfer-dom>
-      <pop @on-first-show="getRelate(9)" height="50%" v-model="show">
+      <pop v-model="show">
+        <ul class="menu-list">
+          <li class="menu-item" @click="show2 = true;show = false">
+            <svg-icon iconClass="similar"></svg-icon>
+            <div class="text">相似彩种</div>
+          </li>
+          <li class="menu-item">
+            <svg-icon iconClass="explain"></svg-icon>
+            <div class="text">玩法说明</div>
+          </li>
+          <li class="menu-item">
+            <svg-icon iconClass="record"></svg-icon>
+            <div class="text">购彩记录</div>
+          </li>
+        </ul>
+      </pop>
+    </div>
+
+    <div v-transfer-dom>
+      <pop @on-first-show="getRelate(1)" v-model="show2">
         <ul class="relate-wrapper" v-if="relateList.length">
           <router-link tag="li" :to="'/lottery/k3/'+item.id" class="relate-item" :key="item.id"
                        v-for="item in relateList"
@@ -62,6 +81,7 @@
         </div>
       </pop>
     </div>
+
   </div>
 </template>
 
@@ -135,6 +155,7 @@
   import isLoading from 'base/loading/isLoading';
   import {pk10_menu, syx5_menu, k3_menu, ssc_menu, pcdd_menu, lhc_menu, pl3_menu} from 'mock/menu.js'
   import axios from 'axios';
+  import {getSimLottery} from 'api/lottery.js';
 
   export default {
     name: "Lottery",
@@ -154,7 +175,8 @@
         relateList: [],
 
         currentTitle: '',
-        show: false
+        show: false,
+        show2: false,
       }
     },
     components: {
@@ -216,12 +238,10 @@
         this.closeMenu();
       },
       getRelate(type) {
-        axios.get('/wap/game/similarType', {
-          params: {type}
-        }).then(res => {
+        getSimLottery(type).then(res=>{
           setTimeout(() => {
-            this.relateList = res.data;
-          }, 20000)
+            this.relateList = res;
+          }, 3000)
         })
       },
       toggleMenu() {
@@ -393,12 +413,13 @@
   }
 
   .relate-wrapper {
-    padding: 20px 0;
+    height: 100%;
+    padding: 30px 0;
     background: #fff;
     .relate-item {
       display: flex;
       align-items: center;
-      padding: 20px 30px;
+      padding: 30px;
       small {
         margin: 0 10px;
         font-size: 80%;
@@ -411,10 +432,32 @@
   }
 
   .loading-wrapper {
-    height: 100%;
+    height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #fff;
+  }
+
+  .menu-list {
+    background: #fff;
+    .menu-item {
+      display: flex;
+      align-items: center;
+      height: 100px;
+      padding: 0 30px;
+      .svg-icon {
+        color: #dc3b40;
+        font-size: 40px;
+      }
+      .text {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        margin-left: 20px;
+        border-bottom: 1px solid #eee;
+      }
+    }
   }
 </style>

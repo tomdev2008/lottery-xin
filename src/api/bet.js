@@ -8,7 +8,29 @@ export function addBet(previewBetArr) {
   })
 }
 
+export function delBet(id) {
+  return request.post('/bets/delBet', {
+    id
+  }).then((res) => {
+    return Promise.resolve(res.data)
+  })
+}
+
 export function getBet() {
+  return request.get('/bets/all').then((res) => {
+    return Promise.resolve(res.data)
+  })
+}
+
+export function searchBet(params) {
+  return request.get('/bets/searchBet', {
+    params
+  }).then((res) => {
+    return Promise.resolve(res.data)
+  })
+}
+
+export function getBetById() {
   return request.get('/bets/all').then((res) => {
     return Promise.resolve(res.data)
   })

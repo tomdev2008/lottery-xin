@@ -8,3 +8,4 @@ export const SET_DROP_EL = 'SET_DROP_EL';
 export const TOGGLE_LOGIN = 'TOGGLE_LOGIN';
 export const SET_PLAY_TYPE = 'SET_PLAY_TYPE';
 export const SET_CURRENT_LOTTERY = 'SET_CURRENT_LOTTERY';
+export const SAVE_USER = 'SAVE_USER';

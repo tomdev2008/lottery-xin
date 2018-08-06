@@ -8,3 +8,4 @@ export const currentPlay = state => state.currentPlay;
 export const showLogin = state => state.showLogin;
 export const playType = state => state.playType;
 export const currentLottery = state => state.currentLottery;
+export const user = state => state.user;

@@ -36,7 +36,7 @@
     name: COMPONENT_NAME,
     props: {
       data: {
-        type: [Array,Object],
+        type: [Array, Object],
         default: []
       },
       scrollbar: {
@@ -113,7 +113,10 @@
           scrollY: this.direction === DIRECTION_V,
           scrollX: this.direction === DIRECTION_H,
           scrollbar: this.scrollbar,
-          pullDownRefresh: this.pullDownRefresh,
+          pullDownRefresh: this.pullDownRefresh ? {
+            threshold: 90,
+            stop: 120
+          } : this.pullDownRefresh,
           pullUpLoad: this.pullUpLoad
         }
 
@@ -144,6 +147,7 @@
               this.bubbleY = Math.max(0, pos.y + this.pulldownInitTop)
               this.$refs.pulldown.style.transitionDuration = ''
               this.$refs.pulldown.style.top = `${Math.min(pos.y + this.pulldownInitTop, 10)}px`
+              console.log(this.bubbleY)
             } else {
               this.bubbleY = 0
             }

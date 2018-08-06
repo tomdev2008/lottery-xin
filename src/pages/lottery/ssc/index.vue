@@ -64,8 +64,12 @@
       </confirm>
     </section>
 
-    <transition name="fade" v-if="!lottery">
-      <loading></loading>
+    <transition name="fade">
+      <loading v-if="!lottery"></loading>
+    </transition>
+
+    <transition name="leftIn">
+      <detail v-if="visible" @close="visible = false"></detail>
     </transition>
 
     <footer class="lottery-footer">
@@ -107,22 +111,21 @@
       </div>
     </footer>
     <shortcut ref="shortcut" @selectMenu="selectMenu" @afterDrop="addPreviewBet" :numbers="xNumbers"></shortcut>
-    <transition name="leftIn">
-      <detail ref="detail" @close="visible=false" v-if="visible"></detail>
-    </transition>
+
   </div>
 </template>
 
 <script>
   import {sscTpl, syx5Tpl, pk10Tpl, pcddTpl, pl3Tpl} from 'mock/template';
-  import {addBet} from 'api/bet.js'
-
+  import {addBet} from 'api/bet.js';
+  import {checkLogin} from 'api/sign.js';
   import axios from 'axios';
   import {ssc} from 'common/js/calculate';
   import mixin from 'common/js/mixins/lotteryMixin';
   import XNumberList from 'base/x-number-list/index';
   import Shortcut from 'base/shortcut/index';
-  import Detail from './../components/detail';
+  import Detail from '../components/detail'
+  import {getToken} from "common/js/utils/auth";
 
   export default {
     name: "SSC",
@@ -178,6 +181,7 @@
         addBet(this.previewBetArr).then(res => {
           if (res.code == 200) {
             this.$toast(`${res.message}`)
+            this.delectAll()
           }
         })
       },
@@ -189,7 +193,8 @@
         this.xNumbers[index].count--;
       },
       delectAll() {
-        this.xNumbers = this.copyNumbers;
+        this.xNumbers = JSON.parse(JSON.stringify(this.copyNumbers))
+        console.log(this.xNumbers)
         this.previewBetArr = [];
       },
       closeBetInfo(e) {
@@ -199,7 +204,7 @@
         this.previewBetArr = selectedArr;
         this.xNumbers = numbers;
         this.listShow = true;
-        console.log(this.previewBetArr, this.xNumbers)
+        //console.log(this.previewBetArr, this.xNumbers)
       },
       addBasket(el, obj, numbers, canDrop, color) {
         //console.log(numbers)  //obj索引
@@ -359,7 +364,7 @@
         })
       },
       getGameTip(playId) {
-        axios.get('/index/playExplain', {
+        /*axios.get('/index/playExplain', {
           params: {
             playId
           }
@@ -367,9 +372,13 @@
           if (res.data) {
             this.gameTip = res.data.simpleInfo;
           }
-        })
+        })*/
       },
       showDetail() {
+        if (!getToken()) {
+          this.$store.commit('TOGGLE_LOGIN', true)
+          return
+        }
         this.visible = true;
       }
     },
@@ -508,7 +517,7 @@
             background: none;
             outline: 0;
             border: 0;
-            height: 100%;
+            height: 100px;
             width: 100%;
             padding: 0 20px;
             font-size: 32px;

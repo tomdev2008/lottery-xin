@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {getToken} from '@/common/js/utils/auth';
 import Toast from '@/base/toast/index.js';
-import store from '@/store/index.js'
+import store from '@/store/index.js';
 
 const service = axios.create({
   timeout: 10000,
@@ -11,7 +11,6 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(config => {
   if (getToken()) {
-    console.log('getToken()',getToken())
     config.headers.Authorization = getToken();
   }
   return config;
@@ -23,21 +22,31 @@ service.interceptors.request.use(config => {
 // respone interceptor
 service.interceptors.response.use(
   response => {
-    const res = response.data;
-    if (res.code == 200) {
-      return response;
-    } else if (res.code == 401) {
-      Toast(res.message)
+    setTimeout(() => {
+      store.commit('SET_AJAX_LOADING', false)
+    }, 500)
+    if (response.data.code == 401) {
+      Toast(response.data.message)
       store.commit('TOGGLE_LOGIN', true)
-      return Promise.reject(res.message);
+      return Promise.reject(response.data.message);
     } else {
-      Toast(res.message)
-      return Promise.reject(res);
+      return response;
     }
   },
   error => {
-    console.log('responseErr' + error)// for debug
-    return Promise.reject(error)
+    setTimeout(() => {
+      store.commit('SET_AJAX_LOADING', false)
+    }, 500)
+    //console.log('responseErr:' + error.response, error.response.status, error.response.data)// for debug
+    if (error.response) {
+      let res = error.response
+      switch (res.status) {
+        case 401:
+          Toast(res.data.message)
+          store.commit('TOGGLE_LOGIN', true)
+      }
+    }
+    return Promise.reject(error.response);
   })
 
 export default service

@@ -6,7 +6,7 @@
         <input type="text" name="username" class="input"
                placeholder="用户名/手机号/邮箱"
                v-model="login.username"
-               v-validate="{ required: true, min:6, max:12 }"
+               v-validate="{ required: true, min:4, max:12 }"
                @focus="changeFace('greeting')"
                @blur="changeFace">
         <div class="error" v-show="errors.has('username')">{{ errors.first('username') }}</div>
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-  import axios from 'axios'
+  import {signIn} from 'api/sign.js'
   import mixin from 'common/js/mixins/signMixin';
 
   export default {
@@ -54,14 +54,12 @@
       doLogin() {
         this.$validator.validateAll().then((result) => {
           if (result) {
-            axios.post('/users/login', {
-              loginForm: this.login
-            }).then(res => {
-              if(res.data.code == 200){
-                this.$toast(`${res.data.message}`)
-                this.$store.commit('TOGGLE_LOGIN', false)
-              }else if(res.data.code == 201){
-                this.$toast(`${res.data.message}`)
+            signIn(this.login).then(res=>{
+              if (res.code == 200) {
+                this.$toast(`${res.message}`)
+                this.$store.dispatch('saveUser', this.login.username)
+              } else if (res.code == 201) {
+                this.$toast(`${res.message}`)
               }
             })
           } else {

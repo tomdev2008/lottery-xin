@@ -29,6 +29,9 @@ const mutations = {
   [types.SET_CURRENT_LOTTERY](state, lottery) {
     state.currentLottery = lottery;
   },
+  [types.SAVE_USER](state, user) {
+    state.user = user;
+  },
 }
 
 export default mutations

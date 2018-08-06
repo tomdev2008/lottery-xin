@@ -54,6 +54,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
+    z-index: 1000000;
     transform: translate(-50%, -50%);
     width: 2.5rem;
     height: 2.5rem;/*'~/assets/img/open_num.png'*/

@@ -150,6 +150,11 @@
       background: linear-gradient(90deg, #69d893 0, #38b366 75%);
       color: #fff;
     }
+    &.yellow {
+      background: #484848;
+      background: linear-gradient(90deg, #8c8c8c 0, #484848 75%);
+      color: #fff;
+    }
     &.gray {
       background: #bbb59c;
       background: linear-gradient(90deg, #bbb59c 0, #bbb59c 75%);

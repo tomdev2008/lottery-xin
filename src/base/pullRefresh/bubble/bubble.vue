@@ -32,7 +32,6 @@
     },
     watch: {
       y(newY) {
-        console.log(newY)
         if(this.pulling)return
         const deg = Math.min(newY, 220)
         this.$refs.lineL.style.transition = 'all 0s'

@@ -33,7 +33,7 @@ export default {
       ],
       dropBalls: [],
       count: 0,
-      beishu: 1,
+      beishu: '',
       selectTip: '',//选择错误提示
       lottery: null,//来讲数据
       startFlag: false,//倒计时开关
@@ -78,7 +78,7 @@ export default {
     },
     totalPrice() {
       let total = 0;
-      let beishu = this.beishu > 0 ? this.beishu : 1
+      let beishu = this.beishu > 0 ? this.beishu : 0
       this.previewBetArr.forEach(item => {
         total += item.actionNum * beishu
       })

@@ -4,9 +4,9 @@
       <div class="form-item">
         <svg-icon icon-class="user"></svg-icon>
         <input type="text" name="username" class="input"
-               placeholder="6位字符"
+               placeholder="用户名至少4位字符"
                v-model="reg.username"
-               v-validate="{ required: true, min:6, max:12}"
+               v-validate="{ required: true, min:4, max:12}"
                @focus="changeFace('greeting')"
                @blur="changeFace">
         <div class="error" v-show="errors.has('username')">{{ errors.first('username') }}</div>
@@ -46,7 +46,7 @@
 </template>
 
 <script>
-  import axios from 'axios';
+  import {signUp} from 'api/sign.js'
   import mixin from 'common/js/mixins/signMixin';
 
   export default {
@@ -61,15 +61,19 @@
         },
       }
     },
+    mounted(){
+
+    },
     methods: {
       doReg() {
         this.$validator.validateAll().then((result) => {
           if (result) {
-            axios.post('/users/reg', {
-              regForm: this.reg
-            }).then(res => {
-              if(res.data.code == 200){
-                this.$toast(`${res.data.message}`)
+            signUp(this.reg).then(res => {
+              if (res.code == 200) {
+                this.$toast(`${res.message}`)
+                this.toggleSign('signIn')
+              } else if (res.code == 201) {
+                this.$toast(`${res.message}`)
               }
             })
           } else {
