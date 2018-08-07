@@ -45,12 +45,13 @@
       </template>
       <img src="../../../assets/placeholder.png" height="100%" class="placeholder" v-else>
     </div>
-    <ellipsis ref="gameTip" :value="gameTip" v-if="gameTip"></ellipsis>
 
     <div class="selectNumber">
       selectedXNums:{{selectedXNums}}----selectedLen:{{selectedLen}}----注数{{count}}
       <x-number-list :numbers="xNumbers" :gameType="currentPlay.type" @add="addBasket"></x-number-list>
     </div>
+
+
 
     <section v-transfer-dom>
       <confirm ref="confirm" title="温馨提示" v-if="lottery">
@@ -63,10 +64,6 @@
         </div>
       </confirm>
     </section>
-
-    <transition name="fade">
-      <loading v-if="!lottery"></loading>
-    </transition>
 
     <transition name="leftIn">
       <detail v-if="visible" @close="visible = false"></detail>
@@ -111,7 +108,9 @@
       </div>
     </footer>
     <shortcut ref="shortcut" @selectMenu="selectMenu" @afterDrop="addPreviewBet" :numbers="xNumbers"></shortcut>
-
+    <transition name="fade">
+      <loading v-if="!lottery"></loading>
+    </transition>
   </div>
 </template>
 
@@ -218,8 +217,7 @@
         }
       },
       selectMenu(index) {
-        let gameTipHeight = this.$refs.gameTip ? this.$refs.gameTip.$el.clientHeight : 0;
-        this.$refs.shortcut._scrollTo(gameTipHeight)
+        this.$refs.shortcut._scrollTo()
       },
       setTpl(playName) {
         if (this.$route.name == 'SSC') {
@@ -362,17 +360,6 @@
             }
           })
         })
-      },
-      getGameTip(playId) {
-        /*axios.get('/index/playExplain', {
-          params: {
-            playId
-          }
-        }).then(res => {
-          if (res.data) {
-            this.gameTip = res.data.simpleInfo;
-          }
-        })*/
       },
       showDetail() {
         if (!getToken()) {

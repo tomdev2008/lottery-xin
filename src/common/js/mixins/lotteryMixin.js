@@ -4,8 +4,6 @@ import Loading from 'base/loading/index.vue';
 import Confirm from 'base/confirm/index';
 import OpenNum from 'base/open-num/index';
 import Clocker from 'base/clocker/index';
-import Ellipsis from 'base/ellipsis/index';
-
 import NumberList from 'base/number-list/number-list';
 
 export default {
@@ -36,14 +34,14 @@ export default {
       beishu: '',
       selectTip: '',//选择错误提示
       lottery: null,//来讲数据
-      startFlag: false,//倒计时开关
+      startFlag: false,//倒计时开关标识
       hisFlag: false,
       hisList: [],
       animation: false,//开奖号码动画开关
     }
   },
   components: {
-    NumberList, Loading, Confirm, OpenNum, Clocker, Ellipsis,
+    NumberList, Loading, Confirm, OpenNum, Clocker,
   },
   created() {
     this.getLottery(this.$route.params.id);
