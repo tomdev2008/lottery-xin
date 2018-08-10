@@ -77,13 +77,46 @@ export const lhcFun = function (numbers, codeLen) {
   }
 }
 
+export const lian2xiao = function (numbers) {
+  let arr = numbers[0];
+  let data = arr.join(',');
+  let combines = combine(arr, 2)
+  let count = combines.length;
+  return {data, combines, count}
+}
+
+export const lian3xiao = function (numbers) {
+  let arr = numbers[1];
+  let data = arr.join(',');
+  let combines = combine(arr, 3)
+  let count = combines.length;
+  return {data, combines, count}
+}
+
+export const lian4xiao = function (numbers) {
+  let arr = numbers[2];
+  let data = arr.join(',');
+  let combines = combine(arr, 4)
+  let count = combines.length;
+  return {data, combines, count}
+}
+
+export const lian5xiao = function (numbers) {
+  let arr = numbers[3];
+  let data = arr.join(',');
+  let combines = combine(arr, 5)
+  let count = combines.length;
+  return {data, combines, count}
+}
+
+
 export const ssc = {
   tzAllSelect,
   tz5xDwei,
 }
 
 export const lhc = {
-  lhcFun, tzAllSelect, tz5xDwei
+  lhcFun, tzAllSelect, tz5xDwei, lian2xiao, lian3xiao, lian4xiao, lian5xiao,
 }
 
 

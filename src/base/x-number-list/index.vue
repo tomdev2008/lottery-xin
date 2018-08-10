@@ -33,7 +33,7 @@
             :class="{'selected':num.selected,'clicked':num.clicked}"
             :data-i="i"
             :data-index="index"
-            @click="selectNum($event, index, i,num,item)">
+            @click="selectNum($event, index, i, num, item)">
             <div class="top">
               <span class="value">{{num.num}}</span>
               <div class="odds" v-if="num.odds">赔率{{num.odds}}</div>
@@ -44,6 +44,7 @@
           </li>
         </transition-group>
       </template>
+
     </div>
   </div>
 </template>
@@ -73,6 +74,16 @@
       }
     },
     methods: {
+      combine(arr, num) {
+        var r = [];
+        (function f(t, a, n) {
+          if (n == 0) return r.push(t);
+          for (var i = 0, l = a.length; i <= l - n; i++) {
+            f(t.concat(a[i]), a.slice(i + 1), n - 1);
+          }
+        })([], arr, num);
+        return r;
+      },
       selectNum(el, index, i, num, item) {
         let selectedCount = item.numList.filter(v => {
           return v.selected;
@@ -98,6 +109,9 @@
         }
         let color = this.numbers[index].numList[i].color
         this.$emit('add', el, {index, i}, this.numbers, canDrop, color)
+
+        this.$store.commit('SET_CALC_FUN', this.numbers[index].calcFun || '')
+        //this.$store.dispatch('calcCount', {calcFun: this.numbers[index].calcFun, numbers: this.numbers})
       },
       beforeEnter(el) {
         el.style.opacity = 0.01;

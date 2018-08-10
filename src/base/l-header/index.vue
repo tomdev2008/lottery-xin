@@ -7,7 +7,9 @@
       <div :class="$style.headerCenter">
         <slot></slot>
       </div>
-      <div :class="$style.headerRight"></div>
+      <div :class="$style.headerRight">
+        <slot name="right"></slot>
+      </div>
     </div>
   </header>
 </template>
@@ -63,6 +65,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 40px;
       }
     }
   }

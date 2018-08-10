@@ -5,6 +5,8 @@ import Confirm from 'base/confirm/index';
 import OpenNum from 'base/open-num/index';
 import Clocker from 'base/clocker/index';
 import NumberList from 'base/number-list/number-list';
+import {getToken} from "common/js/utils/auth";
+import {addBet} from 'api/bet.js';
 
 export default {
   data() {
@@ -30,14 +32,15 @@ export default {
         }
       ],
       dropBalls: [],
-      count: 0,
-      beishu: '',
+      times: '',
+      //count: 0,
       selectTip: '',//选择错误提示
       lottery: null,//来讲数据
       startFlag: false,//倒计时开关标识
       hisFlag: false,
       hisList: [],
       animation: false,//开奖号码动画开关
+      visible: false,//控制投注详情的相识
     }
   },
   components: {
@@ -48,7 +51,7 @@ export default {
     this.setTpl(this.playName);
   },
   computed: {
-    ...mapGetters(['playName', 'currentPlay', 'playType', 'currentLottery']),
+    ...mapGetters(['playName', 'currentPlay', 'playType', 'currentLottery', 'beishu', 'totalCount', 'totalPrice', 'calcFun']),
     selectedXNums() {
       let arr = [];
       this.xNumbers.forEach((number, index) => {
@@ -71,17 +74,20 @@ export default {
         return `按规则选择${this.shouldSelectedLen ? this.currentPlay.length - this.shouldSelectedLen : this.currentPlay.length}个号码`
       }
     },
+    count() {
+      return this.totalCount;
+    },
     checkCls() {
       return this.count > 0 ? 'checkout' : 'checkout disabled';
     },
-    totalPrice() {
+    /*totalPrice() {
       let total = 0;
       let beishu = this.beishu > 0 ? this.beishu : 0
       this.previewBetArr.forEach(item => {
         total += item.actionNum * beishu
       })
       return total
-    },
+    },*/
     Xlist() {
       let arr = [];
       this.xNumbers.forEach((number, index) => {
@@ -114,6 +120,11 @@ export default {
     },
   },
   watch: {
+    times(newVal) {
+      if (!isNaN(newVal)) {
+        this.$store.commit('SET_BEISHU', newVal)
+      }
+    },
     $route(newRoute) {
       if (!newRoute.params.id) {
         return;
@@ -211,11 +222,14 @@ export default {
     },
     normalPK10Data(data) {
       let arr = [];
-      data.forEach(item => {
-
-        let color;
+      let color = ['yellow', 'blue', 'DeepPink', 'DarkViolet', 'SlateBlue', 'green', 'gary', 'DarkCyan', 'LimeGreen', 'Gold'];
+      let nums = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
+      data.forEach((item) => {
+        let index = nums.findIndex(num => {
+          return item == num
+        })
         arr.push({
-          ...map,
+          color: color[index],
           num: item,
         })
       })
@@ -261,6 +275,28 @@ export default {
     closeHis(e) {
       e.stopPropagation();
       this.hisFlag = false;
+    },
+
+    showDetail() {
+      if (!getToken()) {
+        this.$store.commit('TOGGLE_LOGIN', true)
+        return
+      }
+      this.visible = true;
+    },
+    checkout() {
+      //console.log(this.previewBetArr)
+      if (!this.totalCount) return;
+      if (!this.beishu) {
+        this.$toast('请输入投注金额');
+        return;
+      }
+      addBet(this.previewBetArr).then(res => {
+        if (res.code == 200) {
+          this.$toast(`${res.message}`)
+          this.delectAll()
+        }
+      })
     },
   },
 

@@ -33,6 +33,7 @@
 
 <script>
   import axios from 'axios';
+  import {lhc} from 'common/js/calculate';
 
   export default {
     name: "Shortcut",
@@ -51,6 +52,8 @@
         dropBalls: [],
         count: 0,
         transition: '',
+        amount: 0,
+        selectedArr: [],
       }
     },
     watch: {
@@ -91,6 +94,21 @@
           }
         }
         return 0;
+      },
+      Xlist() {
+        let arr = [];
+        this.numbers.forEach((number, index) => {
+          arr[index] = [];
+          let count = 0
+          number.numList.forEach(item => {
+            if (item.selected) {
+              arr[index].push(item.num);
+              count++
+            }
+          })
+          this.$set(number, 'count', count)
+        })
+        return arr;
       },
     },
     methods: {
@@ -209,37 +227,74 @@
         let diffY = diff ? diff : 0;
         window.scrollTo(0, this.listHeight[this.selectedIndex] + diffY);
       },
+      getArrSum(arr) {
+        return arr.reduce((p, n) => {
+          return p + n;
+        })
+      },
       _calcCount(numbers) {
         let selectedArr = []
-        //console.log('numbers', this.$store.getters.playName)
-        numbers.forEach((number, index) => {
-          let count = 0;
-          number.numList.forEach((item, i) => {
-            let map = {};
-            if (item.selected) {
-              count++;
+        if (this.$store.getters.calcFun) {
+          numbers.forEach((number, index) => {
+            if (number.numList.some(item => {
+              return item.selected;
+            })) {
+              let map = {};
               map['index'] = index;
-              map['i'] = i;
-              map['beiShu'] = this.beiShu || 1;
+              map['i'] = 0;
+              map['beiShu'] = this.$store.getters.beiShu || 1;
               map['playType'] = this.$store.getters.playName;
               map['playId'] = 1;
               map['subPlayType'] = number.title;
               map['subPlayId'] = 83;
-              map['bonusProp'] = item.odds;
-              map['actionNum'] = 1;
-              map['actionData'] = item.num;
-              map['actionAmount'] = map['beiShu'] * 1;
-              map['actionFun'] = 'actionFun';
+              map['bonusProp'] = number.numList[0].odds;
+              map['actionCombines'] = number.calcFun ? lhc[number.calcFun](this.Xlist).combines : lhc['tz5xDwei'](this.Xlist).combines;
+              map['actionNum'] = number.calcFun ? lhc[number.calcFun](this.Xlist).count : lhc['tz5xDwei'](this.Xlist).count;
+              map['actionData'] = number.calcFun ? lhc[number.calcFun](this.Xlist).data || item.num : lhc['tz5xDwei'](this.Xlist).data;
+              map['actionAmount'] = map['beiShu'] * map['actionNum'];
+              map['actionFun'] = number.calcFun;
               map['betTime'] = new Date().getTime();
               map['gameId'] = this.$route.params.id;
               map['gameName'] = this.$store.getters.currentLottery.actionName;
               map['actionNo'] = this.$store.getters.currentLottery.thisNo;
               map['kjTime'] = this.$store.getters.currentLottery.lastTime;
-              selectedArr.push(map)
+              if (map['actionNum'] > 0) {
+                selectedArr.push(map);
+              }
             }
           })
-          this.$set(number, 'count', count)
-        })
+        } else {
+          numbers.forEach((number, index) => {
+            let count = 0;
+            number.numList.forEach((item, i) => {
+              let map = {};
+              if (item.selected) {
+                count++;
+                map['index'] = index;
+                map['i'] = i;
+                map['beiShu'] = this.beiShu || 1;
+                map['playType'] = this.$store.getters.playName;
+                map['playId'] = 1;
+                map['subPlayType'] = number.title;
+                map['subPlayId'] = 83;
+                map['bonusProp'] = item.odds;
+                map['actionNum'] = 1;
+                map['actionData'] = item.num;
+                map['actionAmount'] = map['beiShu'] * 1;
+                map['actionFun'] = 'actionFun';
+                map['betTime'] = new Date().getTime();
+                map['gameId'] = this.$route.params.id;
+                map['gameName'] = this.$store.getters.currentLottery.actionName;
+                map['actionNo'] = this.$store.getters.currentLottery.thisNo;
+                map['kjTime'] = this.$store.getters.currentLottery.lastTime;
+                selectedArr.push(map)
+              }
+            })
+            this.$set(number, 'count', count)
+          })
+        }
+
+        console.log(selectedArr)
         this.$emit('afterDrop', selectedArr, numbers)
       },
     }

@@ -5,7 +5,7 @@
         <div class="lottery-half lottery-prev" @click="hisFlag = true">
           <div class="title">
             <span>{{lottery.actionName}}</span>
-            <span>{{lottery.actionNo}}</span>期开奖号码
+            <span>{{lottery.actionNo}}</span>期
             <svg-icon iconClass="more"></svg-icon>
           </div>
           <div class="bottom">
@@ -47,11 +47,11 @@
     </div>
 
     <div class="selectNumber">
-      selectedXNums:{{selectedXNums}}----selectedLen:{{selectedLen}}----注数{{count}}
+      <!--<div>selectedXNums:{{selectedXNums}}&#45;&#45;&#45;&#45;selectedLen:{{selectedLen}}&#45;&#45;&#45;&#45;注数{{count}}</div>-->
       <x-number-list :numbers="xNumbers" :gameType="currentPlay.type" @add="addBasket"></x-number-list>
     </div>
 
-
+    <explain></explain>
 
     <section v-transfer-dom>
       <confirm ref="confirm" title="温馨提示" v-if="lottery">
@@ -73,22 +73,20 @@
       <transition name="slideTop">
         <div class="preview-wrapper" v-show="previewBetArr.length && listShow">
           <div class="title">
-            <strong v-if="lottery">{{lottery.actionName}}</strong>
+            <strong v-if="lottery">{{lottery.actionName}}-{{lottery.thisNo}}期</strong>
             <span @click="delectAll">清空</span>
           </div>
-          <div class="item sticky">
-            <span class="qihao">期号</span>
+          <div class="item">
             <span>玩法</span>
             <span>投注内容</span>
-            <span>注数</span>
-            <span class="price">金额 <strong class="total">{{totalPrice}}元</strong></span>
+            <span>注数 <strong class="red">{{selectedCount}}注</strong></span>
+            <span class="price">金额 <strong class="red">{{totalPrice}}元</strong></span>
             <span class="edit"></span>
           </div>
           <transition-group name="list" tag="div">
             <div v-for="(item,index) in previewBetArr" :key="index" class="item">
-              <span class="qihao">{{item.actionNo}}</span>
-              <span>{{item.playType}}</span>
-              <span>{{item.actionData}}</span>
+              <span class="ellipsis">{{item.playType}}<span v-if="item.subPlayType">_{{item.subPlayType}}</span></span>
+              <span class="ellipsis" style="text-overflow: ellipsis">{{item.actionData}}</span>
               <span>{{item.actionNum}}</span>
               <span class="price">{{item.actionNum * beishu}}</span>
               <span class="edit" @click="delectOne(item,index)"><svg-icon iconClass="remove"></svg-icon></span>
@@ -98,13 +96,12 @@
       </transition>
       <div class="bet-content" @click="listShow = !listShow">
         <div class="bet-title" @click.stop>
-          <!--{{betDesc}}-->
-          <input type="tel" placeholder="每注金额" minlength="1" maxlength="5" v-model="beishu" @focus="listShow = false">
+          <input type="tel" placeholder="每注金额" minlength="1" maxlength="5" v-model.number="times"
+                 @focus="listShow = false">
         </div>
       </div>
       <div :class="checkCls" @click="checkout">
         {{checkDesc}}
-        <div class="progress" ref="progress"></div>
       </div>
     </footer>
     <shortcut ref="shortcut" @selectMenu="selectMenu" @afterDrop="addPreviewBet" :numbers="xNumbers"></shortcut>
@@ -116,25 +113,23 @@
 
 <script>
   import {sscTpl, syx5Tpl, pk10Tpl, pcddTpl, pl3Tpl} from 'mock/template';
-  import {addBet} from 'api/bet.js';
   import {checkLogin} from 'api/sign.js';
   import axios from 'axios';
   import {ssc} from 'common/js/calculate';
   import mixin from 'common/js/mixins/lotteryMixin';
   import XNumberList from 'base/x-number-list/index';
   import Shortcut from 'base/shortcut/index';
-  import Detail from '../components/detail'
-  import {getToken} from "common/js/utils/auth";
+  import Detail from '../components/detail';
+  import Explain from '../components/explain';
 
   export default {
     name: "SSC",
     mixins: [mixin],
     components: {
-      XNumberList, Shortcut, Detail,
+      XNumberList, Shortcut, Detail, Explain,
     },
     data() {
       return {
-        visible: false,
         xNumbers: [],
         previewBetArr: [],
         listShow: false,
@@ -156,17 +151,17 @@
           return '#f86469'
         }
       },
-    },
-    watch: {
-      Xlist(newVal, oldVal) {
-        let action = this.currentPlay.action;
-        let length = this.currentPlay.length;
-        try {
-          let result = ssc[action](newVal, length);
-          this.count = result.actionNum;
-          console.log(result)
-        } catch (e) {
-          this.count = 0;
+      selectedCount() {
+        if (!this.previewBetArr.length) {
+          this.$store.commit('SET_TOTAL_COUNT', 0)
+          return 0;
+        } else {
+          let totalCount = 0;
+          this.previewBetArr.forEach(item => {
+            totalCount += item.actionNum;
+          })
+          this.$store.commit('SET_TOTAL_COUNT', totalCount)
+          return totalCount;
         }
       },
     },
@@ -174,26 +169,23 @@
       clearTimeout(this.getDataTimer)
     },
     methods: {
-      checkout() {
-        //console.log(this.previewBetArr)
-        if (!this.count) return;
-        addBet(this.previewBetArr).then(res => {
-          if (res.code == 200) {
-            this.$toast(`${res.message}`)
-            this.delectAll()
-          }
-        })
-      },
       delectOne(item, previewIndex) {
         let i = item.i;
         let index = item.index;
         this.previewBetArr.splice(previewIndex, 1);
-        this.$set(this.xNumbers[index].numList[i], 'selected', false);
-        this.xNumbers[index].count--;
+        if (this.calcFun) {
+          this.xNumbers[index].numList.forEach(item => {
+            this.$set(item, 'selected', false);
+            this.xNumbers[index].count = 0;
+          })
+        } else {
+          this.$set(this.xNumbers[index].numList[i], 'selected', false);
+          this.xNumbers[index].count--;
+        }
+
       },
       delectAll() {
         this.xNumbers = JSON.parse(JSON.stringify(this.copyNumbers))
-        console.log(this.xNumbers)
         this.previewBetArr = [];
       },
       closeBetInfo(e) {
@@ -203,10 +195,8 @@
         this.previewBetArr = selectedArr;
         this.xNumbers = numbers;
         this.listShow = true;
-        //console.log(this.previewBetArr, this.xNumbers)
       },
       addBasket(el, obj, numbers, canDrop, color) {
-        //console.log(numbers)  //obj索引
         this.ballColor = color ? color : 'red';
         this.xNumbers = numbers;
         if (canDrop) {
@@ -291,8 +281,6 @@
           }
         }
         this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
-        //获取玩法提示
-        this.getGameTip(this.currentPlay.id);
         this.previewBetArr = [];
       },
       getRelData(lottery) {
@@ -361,13 +349,6 @@
           })
         })
       },
-      showDetail() {
-        if (!getToken()) {
-          this.$store.commit('TOGGLE_LOGIN', true)
-          return
-        }
-        this.visible = true;
-      }
     },
   }
 </script>
@@ -564,7 +545,7 @@
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
-              .total {
+              .red {
                 color: #d22a39;
               }
             }

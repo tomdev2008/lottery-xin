@@ -11,13 +11,13 @@
         </ul>
       </div>
       <ul class="grid">
-        <router-link tag="li" :to="item.link" :key="item.link" class="higntlight" v-for="item in cates"
-                     v-show="item.type == currentType || currentType == 'all'">
+        <li :key="item.link" class="higntlight" v-for="item in cates" @click="goRoute(item)"
+            v-show="item.type == currentType || currentType == 'all'">
           <span class="iconfont" :class="item.icon" v-if="item.icon"></span>
           <img :src="item.img" :alt="item.name" class="logo" v-else>
           <strong class="title">{{item.name}}</strong>
           <small class="info">{{item.info}}</small>
-        </router-link>
+        </li>
       </ul>
     </div>
     <l-footer></l-footer>
@@ -315,7 +315,8 @@
     },
     methods: {
       goRoute(item) {
-        this.$router.push({path: item.link ? item.link : '/'})
+        this.$router.push({path: item.link ? item.link : '/'});
+        this.$store.dispatch('setSelectedLottery', item)
       },
       selectCate(item, index) {
         this.cateIndex = index;

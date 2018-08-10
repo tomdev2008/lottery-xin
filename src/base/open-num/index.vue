@@ -117,7 +117,7 @@
     width: 50px;
     height: 50px;
     line-height: 50px;
-    margin: 0 4px;
+    margin: 4px 4px 0 0;
     background: #dc3b40;
     _background: linear-gradient(90deg, #f86469, #bf1f24 75%);
     color: #fff;
@@ -125,9 +125,9 @@
     text-align: center;
     font-size: 28px;
     &.small {
-      width: 40px;
-      height: 40px;
-      line-height: 40px;
+      width: 38px;
+      height: 38px;
+      line-height: 38px;
       font-size: 22px;
     }
     &.none {
@@ -158,6 +158,36 @@
     &.gray {
       background: #bbb59c;
       background: linear-gradient(90deg, #bbb59c 0, #bbb59c 75%);
+    }
+    &.DeepPink {
+      background: #FF1493;
+      background: linear-gradient(90deg, #ff00bd 0, #FF1493 75%);
+      color: #fff;
+    }
+    &.DarkViolet {
+      background: #9400D3;
+      background: linear-gradient(90deg, #915cdb 0, #9400D3 75%);
+      color: #fff;
+    }
+    &.SlateBlue {
+      background: #6A5ACD;
+      background: linear-gradient(90deg, #6f73cd 0, #6A5ACD 75%);
+      color: #fff;
+    }
+    &.DarkCyan {
+      background: #008B8B;
+      background: linear-gradient(90deg, #00b3b3 0, #008B8B 75%);
+      color: #fff;
+    }
+    &.LimeGreen {
+      background: #32CD32;
+      background: linear-gradient(90deg, #5ee800 0, #32CD32 75%);
+      color: #fff;
+    }
+    &.Gold {
+      background: #FFD700;
+      background: linear-gradient(90deg, #ffcf0a 0, #ffb300 75%);
+      color: #fff;
     }
     &.shadow {
       box-shadow: 0 6px 2px #bbb59c;

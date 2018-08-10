@@ -1,12 +1,16 @@
 <template>
   <div class="detail">
-    <l-header @back="close">投注记录</l-header>
+    <l-header @back="close">
+      投注记录
+      <svg-icon iconClass="edit" slot="right"></svg-icon>
+    </l-header>
     <div class="detailWrapper">
       <scroll ref="scrollList"
               :data="data"
               :scrollbar="false"
               :pullDownRefresh="pullDownRefresh"
               :probeType="3"
+              :click="true"
               @pullingDown="onPullingDown">
         <div style="min-height: 100vh;">
           <transition-group
@@ -16,7 +20,8 @@
             @beforeEnter="beforeEnter"
             @enter="enter"
           >
-            <li v-for="(item, index) in data" class="js-hook-item" :key="item._id" :data-index="index" data-type="0" @click="skip(index)">
+            <li v-for="(item, index) in data" class="js-hook-item" :key="item._id" :data-index="index" data-type="0"
+                @click="skip(index)">
               <div class="content" @touchstart.capture="touchStart" @touchend.capture="touchEnd">
                 <div class="left">
                   <div class="gameName"><span>{{item.gameName}}</span> - <span>{{item.playType}}</span></div>
@@ -32,7 +37,7 @@
             </li>
           </transition-group>
         </div>
-        <div v-show="data && data.length == 0" style="min-height: 100vh;" class="noResult">
+        <div v-show="data.length == 0" style="min-height: 100vh;" class="noResult">
           <no-result></no-result>
         </div>
       </scroll>
@@ -55,7 +60,9 @@
         pullDownRefresh: true,
         data: [],
         startX: 0,
+        startY: 0,
         endX: 0,
+        endY: 0,
       }
     },
     mounted() {
@@ -78,30 +85,44 @@
         setTimeout(function () {
           Velocity(
             el,
-            { height: 0 },
-            { complete: done }
+            {height: 0},
+            {complete: done}
           )
         }, delay)
       },
       touchStart(e) {
         this.startX = e.touches[0].clientX;
+        this.startY = e.touches[0].clientY;
         this.restSlide()
       },
       touchEnd(e) {
         let parentElement = e.currentTarget.parentElement;
         this.endX = e.changedTouches[0].clientX;
+        this.endY = e.changedTouches[0].clientY;
+        const p1 = {x: this.startX, y: this.startY}
+        const p2 = {x: this.endX, y: this.endY}
+        //console.log(this.getAngle(p1, p2))
+        if ((this.getAngle(p1, p2) >= 90 && this.getAngle(p1, p2) <= 160) || (this.getAngle(p1, p2) >= -160 && this.getAngle(p1, p2) <= -90)) return
         if (parentElement.dataset.type == 0 && this.startX - this.endX > 30) {
-          this.restSlide();
+          //this.restSlide();
           parentElement.dataset.type = 1;
         }
         if (parentElement.dataset.type == 1 && this.startX - this.endX < -30) {
-          this.restSlide();
+          //this.restSlide();
           parentElement.dataset.type = 0;
         }
         this.startX = 0;
+        this.startY = 0;
         this.endX = 0;
+        this.endY = 0;
       },
-      skip() {
+      getAngle(p1, p2) {
+        var r = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        var a = r * 180 / Math.PI;
+        return a;
+      },
+      skip(e) {
+        console.log(this.checkSlide())
         if (this.checkSlide()) {
           this.restSlide();
         } else {
@@ -127,14 +148,15 @@
       onPullingDown() {
         this._searchBet()
       },
-      checkSlide() {
+      checkSlide(e) {
         let listItems = document.querySelectorAll('.js-hook-item');
+        var status = false
         for (let i = 0; i < listItems.length; i++) {
           if (listItems[i].dataset.type == 1) {
-            return true;
+            status = true;
           }
         }
-        return false;
+        return status;
       },
       restSlide() {
         let listItems = document.querySelectorAll('.js-hook-item');

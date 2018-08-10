@@ -29,7 +29,7 @@
     <div class="bet-content" @click="listShow = !listShow">
       <div class="bet-title">
         {{betDesc}}
-        <input type="number" minlength="1" maxlength="4" v-model="beishu" @click.stop>
+        <input type="number" minlength="1" maxlength="4" v-model="times" @click.stop>
       </div>
     </div>
     <div :class="checkCls" @click="checkout">
@@ -42,20 +42,27 @@
 
 <script>
   export default {
-    props:{
+    props: {
       previewBetArr: {
-        type:Array,
-        default:[]
+        type: Array,
+        default: []
       },
-      footerData:{
-        type:Object
+      footerData: {
+        type: Object
       },
     },
-    data(){
+    data() {
       return {
         listShow: false,
-        beishu: 1,
+        times: 1,
         count: 0,
+      }
+    },
+    watch: {
+      times(newVal) {
+        if (newVal && newVal > 0) {
+          this.$store.commit('SET_BEISHU', newVal)
+        }
       }
     },
     computed: {
@@ -74,7 +81,7 @@
         return `共 ${this.count} 注 , ${this.count * this.beishu} 元`;
       },
     },
-    methods:{
+    methods: {
       delectOne(item, previewIndex) {
         let i = item.i;
         let index = item.index;

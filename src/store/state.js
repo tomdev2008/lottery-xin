@@ -11,7 +11,12 @@ const state = {
   showLogin: false,
   playType: 1,
   currentLottery: null,
+  selectedLottery: storage.get('selectedLottery') ? storage.get('selectedLottery') : null,
   user: getToken() ? storage.get('username') : null,
+  explainFlag: false,
+  beishu: '',
+  calcFun: null,
+  totalCount: 0,
 }
 
 export default state

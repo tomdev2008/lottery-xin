@@ -6,7 +6,7 @@
         <input type="text" name="username" class="input"
                placeholder="用户名/手机号/邮箱"
                v-model="login.username"
-               v-validate="{ required: true, min:4, max:12 }"
+               v-validate="{ required: true, min:6, max:12 }"
                @focus="changeFace('greeting')"
                @blur="changeFace">
         <div class="error" v-show="errors.has('username')">{{ errors.first('username') }}</div>

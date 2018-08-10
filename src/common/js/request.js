@@ -4,7 +4,7 @@ import Toast from '@/base/toast/index.js';
 import store from '@/store/index.js';
 
 const service = axios.create({
-  timeout: 10000,
+  timeout: 3000,
   withCredentials: true, // 是否允许带cookie这些
 })
 

@@ -54,8 +54,8 @@
             <svg-icon iconClass="similar"></svg-icon>
             <div class="text">相似彩种</div>
           </li>
-          <li class="menu-item">
-            <svg-icon iconClass="explain"></svg-icon>
+          <li class="menu-item" @click="showExplain">
+            <svg-icon iconClass="explain" id="miniWrapper"></svg-icon>
             <div class="text">玩法说明</div>
           </li>
           <li class="menu-item">
@@ -238,7 +238,7 @@
         this.closeMenu();
       },
       getRelate(type) {
-        getSimLottery(type).then(res=>{
+        getSimLottery(type).then(res => {
           setTimeout(() => {
             this.relateList = res;
           }, 3000)
@@ -253,6 +253,10 @@
       closeMenu() {
         this.menuFlag = false;
       },
+      showExplain() {
+        this.show = false;
+        this.$store.commit('TOGGLE_EXPLAIN', true)
+      }
     },
   }
 </script>
@@ -441,6 +445,7 @@
 
   .menu-list {
     background: #fff;
+    border-radius: 40px 40px 0 0;
     .menu-item {
       display: flex;
       align-items: center;

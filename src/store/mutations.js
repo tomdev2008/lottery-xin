@@ -29,8 +29,23 @@ const mutations = {
   [types.SET_CURRENT_LOTTERY](state, lottery) {
     state.currentLottery = lottery;
   },
+  [types.SET_SELECTED_LOTTERY](state, lottery) {
+    state.selectedLottery = lottery;
+  },
   [types.SAVE_USER](state, user) {
     state.user = user;
+  },
+  [types.TOGGLE_EXPLAIN](state, flag) {
+    state.explainFlag = flag;
+  },
+  [types.SET_BEISHU](state, beishu) {
+    state.beishu = beishu;
+  },
+  [types.SET_CALC_FUN](state, calcFun) {
+    state.calcFun = calcFun;
+  },
+  [types.SET_TOTAL_COUNT](state, count) {
+    state.totalCount = count;
   },
 }
 

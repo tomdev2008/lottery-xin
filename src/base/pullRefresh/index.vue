@@ -147,7 +147,6 @@
               this.bubbleY = Math.max(0, pos.y + this.pulldownInitTop)
               this.$refs.pulldown.style.transitionDuration = ''
               this.$refs.pulldown.style.top = `${Math.min(pos.y + this.pulldownInitTop, 10)}px`
-              console.log(this.bubbleY)
             } else {
               this.bubbleY = 0
             }
@@ -172,6 +171,9 @@
       },
       scrollTo() {
         this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments)
+      },
+      zoomTo() {
+        this.scroll && this.scroll.zoomTo.apply(this.scroll, arguments)
       },
       scrollToElement() {
         this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments)

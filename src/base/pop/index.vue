@@ -166,7 +166,7 @@
         left: 0;
         bottom: 0;
         width: 100%;
-        background: rgba(0,0,0,.3);
+        _background: rgba(0,0,0,.3);
         z-index: 501;
         transition-property: transform;
         transition-duration: 300ms;

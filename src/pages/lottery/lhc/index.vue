@@ -38,7 +38,7 @@
             </table>
           </div>
         </div>
-        <div class="lottery-half lottery-next">
+        <div class="lottery-half lottery-next" @click="showDetail">
           <div class="title">
             <span>{{lottery.thisNo}} 期</span>
           </div>
@@ -52,12 +52,12 @@
       </template>
       <img src="../../../assets/placeholder.png" class="placeholder" v-else>
     </div>
-    <!--<ellipsis ref="gameTip" :value="gameTip" v-if="gameTip"></ellipsis>-->
     <div class="selectNumber">
-      <div>Xlist:{{Xlist}}---count:{{count}}</div>
+      <!--<div>Xlist:{{Xlist}}-&#45;&#45;selectedXNums:{{selectedXNums}}-&#45;&#45;count:{{count}}</div>-->
       <x-number-list :numbers="xNumbers" :gameType="currentPlay.type" @add="addBasket"></x-number-list>
     </div>
 
+    <explain></explain>
 
     <div v-transfer-dom>
       <confirm ref="confirm" title="温馨提示" v-if="lottery">
@@ -70,29 +70,29 @@
         </div>
       </confirm>
     </div>
-    <transition name="fade" v-if="!lottery">
-      <loading></loading>
+
+    <transition name="leftIn">
+      <detail v-if="visible" @close="visible = false"></detail>
     </transition>
-    <footer class="lottery-footer credit" v-if="playType == 1">
+
+    <footer class="lottery-footer">
       <transition name="slideTop">
         <div class="preview-wrapper" v-show="previewBetArr.length && listShow">
           <div class="title">
-            <strong v-if="lottery">{{lottery.actionName}}</strong>
+            <strong v-if="lottery">{{lottery.actionName}}-{{lottery.thisNo}}期</strong>
             <span @click="delectAll">清空</span>
           </div>
           <div class="item">
-            <span class="qihao">期号</span>
             <span>玩法</span>
             <span>投注内容</span>
-            <span>注数</span>
-            <span class="price">金额 <strong class="total">{{totalPrice}}元</strong></span>
+            <span>注数 <strong class="red">{{selectedCount}}注</strong></span>
+            <span class="price">金额 <strong class="red">{{totalPrice}}元</strong></span>
             <span class="edit"></span>
           </div>
           <transition-group name="list" tag="div">
             <div v-for="(item,index) in previewBetArr" :key="index" class="item">
-              <span class="qihao">{{item.actionNo}}</span>
-              <span>{{item.playType}}</span>
-              <span>{{item.actionData}}</span>
+              <span class="ellipsis">{{item.playType}}<span v-if="item.subPlayType">_{{item.subPlayType}}</span></span>
+              <span class="ellipsis" style="text-overflow: ellipsis">{{item.actionData}}</span>
               <span>{{item.actionNum}}</span>
               <span class="price">{{item.actionNum * beishu}}</span>
               <span class="edit" @click="delectOne(item,index)"><svg-icon iconClass="remove"></svg-icon></span>
@@ -101,17 +101,19 @@
         </div>
       </transition>
       <div class="bet-content" @click="listShow = !listShow">
-        <div class="bet-title">
-          {{betDesc}}
+        <div class="bet-title" @click.stop>
+          <input type="tel" placeholder="每注金额" minlength="1" maxlength="5" v-model.number="times"
+                 @focus="listShow = false">
         </div>
       </div>
       <div :class="checkCls" @click="checkout">
         {{checkDesc}}
-        <div class="progress" ref="progress"></div>
       </div>
     </footer>
-    <shortcut ref="shortcut" @selectMenu="selectMenu" @afterDrop="addPreviewBet" :numbers="xNumbers"
-              v-if="playType == 1"></shortcut>
+    <shortcut ref="shortcut" @selectMenu="selectMenu" @afterDrop="addPreviewBet" :numbers="xNumbers"></shortcut>
+    <transition name="fade">
+      <loading v-if="!lottery"></loading>
+    </transition>
   </div>
 </template>
 
@@ -265,7 +267,9 @@
   import mixin from 'common/js/mixins/lotteryMixin';
   import XNumberList from 'base/x-number-list/index';
   import Shortcut from 'base/shortcut/index';
-  import {addBet} from 'api/bet.js'
+  import Detail from '../components/detail';
+  import Explain from '../components/explain';
+
 
   export default {
     name: "LHC",
@@ -284,21 +288,7 @@
       }
     },
     components: {
-      XNumberList, Shortcut,
-    },
-    watch: {
-      Xlist(newVal) {
-        //console.log('newVal', newVal)
-        let action = this.currentPlay.action;
-        let length = this.currentPlay.length;
-        try {
-          let result = lhc[action](newVal, length);
-          this.count = result.actionNum;
-          console.log('result',result)
-        } catch (e) {
-          this.count = 0;
-        }
-      },
+      XNumberList, Shortcut, Detail, Explain,
     },
     computed: {
       ballColorCom() {
@@ -310,17 +300,38 @@
           return '#f86469'
         }
       },
+      selectedCount() {
+        if (!this.previewBetArr.length) {
+          this.$store.commit('SET_TOTAL_COUNT', 0)
+          return 0;
+        } else {
+          let totalCount = 0;
+          this.previewBetArr.forEach(item => {
+            totalCount += item.actionNum;
+          })
+          this.$store.commit('SET_TOTAL_COUNT', totalCount)
+          return totalCount;
+        }
+      },
     },
     methods: {
       delectOne(item, previewIndex) {
         let i = item.i;
         let index = item.index;
         this.previewBetArr.splice(previewIndex, 1);
-        this.$set(this.xNumbers[index].numList[i], 'selected', false);
-        this.xNumbers[index].count--;
+        if (this.calcFun) {
+          this.xNumbers[index].numList.forEach(item => {
+            this.$set(item, 'selected', false);
+            this.xNumbers[index].count = 0;
+          })
+        } else {
+          this.$set(this.xNumbers[index].numList[i], 'selected', false);
+          this.xNumbers[index].count--;
+        }
+
       },
       delectAll() {
-        this.xNumbers = this.copyNumbers;
+        this.xNumbers = JSON.parse(JSON.stringify(this.copyNumbers))
         this.previewBetArr = [];
       },
       closeBetInfo(e) {
@@ -330,12 +341,9 @@
         this.previewBetArr = selectedArr;
         this.xNumbers = numbers;
         this.listShow = true;
-        //console.log(this.previewBetArr, this.xNumbers,)
       },
       addBasket(el, obj, numbers, canDrop, color) {
-        console.log(color)
         this.ballColor = color ? color : '';
-        //console.log(numbers)  //obj索引
         this.xNumbers = numbers;
         if (canDrop) {
           let ballRect = document.getElementsByClassName('shortcut')[0].getElementsByClassName('current')[0].getBoundingClientRect()
@@ -346,8 +354,7 @@
         //this.setCheckoutHeight()
       },
       selectMenu(index) {
-        let gameTipHeight = this.$refs.gameTip ? this.$refs.gameTip.$el.clientHeight : 0;
-        this.$refs.shortcut._scrollTo(gameTipHeight)
+        this.$refs.shortcut._scrollTo()
       },
       setTpl(playName) {
         switch (playName) {
@@ -413,19 +420,19 @@
             break;
           case '连肖':
             this.xNumbers = [
-              {title: '二肖连', numList: xiaoList(), balls: balls(), length: 6},
-              {title: '三肖连', numList: xiaoList(), balls: balls(), length: 6},
-              {title: '四肖连', numList: xiaoList(), balls: balls(), length: 6},
-              {title: '五肖连', numList: xiaoList(), balls: balls(), length: 6},
+              {title: '二肖连', numList: xiaoList(), balls: balls(), length: 6, calcFun: 'lian2xiao'},
+              {title: '三肖连', numList: xiaoList(), balls: balls(), length: 6, calcFun: 'lian3xiao'},
+              {title: '四肖连', numList: xiaoList(), balls: balls(), length: 6, calcFun: 'lian4xiao'},
+              {title: '五肖连', numList: xiaoList(), balls: balls(), length: 6, calcFun: 'lian5xiao'},
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
           case '连尾':
             this.xNumbers = [
-              {title: '二尾碰', numList: weiList(), balls: balls(), length: 6},
-              {title: '三尾碰', numList: weiList(), balls: balls(), length: 6},
-              {title: '四尾碰', numList: weiList(), balls: balls(), length: 6},
-              {title: '五尾碰', numList: weiList(), balls: balls(), length: 6},
+              {title: '二尾碰', numList: weiList(), balls: balls(), length: 6, calcFun: 'lian2xiao'},
+              {title: '三尾碰', numList: weiList(), balls: balls(), length: 6, calcFun: 'lian2xiao'},
+              {title: '四尾碰', numList: weiList(), balls: balls(), length: 6, calcFun: 'lian2xiao'},
+              {title: '五尾碰', numList: weiList(), balls: balls(), length: 6, calcFun: 'lian2xiao'},
             ];
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
@@ -454,8 +461,6 @@
             this.copyNumbers = JSON.parse(JSON.stringify(this.xNumbers))
             break;
         }
-        //获取玩法提示
-        this.getGameTip(this.currentPlay.id)
       },
       getRelData(lottery) {
         axios.get('/index/getLotteryInfo', {
@@ -466,7 +471,6 @@
         }).then(resp => {
           if (resp.data.code == 1) {
             //console.log(resp.data.data)
-
             resp.data.data.data = this.normalLhcList(resp.data.data.data)
             setTimeout(() => {
               this.lottery.data = resp.data.data.data;
@@ -493,24 +497,6 @@
           this.hisList.forEach(item => {
             item.data = this.normalLhcList(item.data);
           })
-        })
-      },
-      getGameTip(playId) {
-        axios.get('/mock/play').then(res => {
-          this.gameTip = res.data.data;
-          /*this.gameTip = res.data.data.find(item => {
-            return item.id == this.currentPlay.id
-          }).tip || ''*/
-        })
-      },
-
-      checkout() {
-        //console.log(this.previewBetArr)
-        if (!this.count) return;
-        addBet(this.previewBetArr).then(res => {
-          if (res.code == 200) {
-            this.$toast(`${res.message}`)
-          }
         })
       },
     },
@@ -579,7 +565,7 @@
               border-top: 1px solid #c3bba2;
               font-size: 26px;
               tr {
-                td,th {
+                td, th {
                   padding: 10px 0;
                 }
               }
@@ -644,11 +630,6 @@
       background: #575858;
       width: 100%;
       display: flex;
-      &.credit {
-        .bet-content {
-          padding-left: 30px;
-        }
-      }
       .bet-content {
         position: relative;
         z-index: 1;
@@ -657,12 +638,26 @@
         flex-direction: column;
         justify-content: center;
         height: 100%;
-        padding-left: 170px;
         font-size: 28px;
         background: #575858;
         color: #fff;
         .bet-title {
+          width: 200px;
           font-size: 32px;
+          input[type="tel"] {
+            -webkit-appearance: none;
+            background: none;
+            outline: 0;
+            border: 0;
+            height: 100px;
+            width: 100%;
+            padding: 0 20px;
+            font-size: 32px;
+            color: #fff;
+            &::-webkit-input-placeholder {
+              color: rgba(255, 255, 255, .5);
+            }
+          }
         }
       }
       .preview-wrapper {
@@ -706,7 +701,16 @@
               flex: 0 0 40px;
             }
             &.qihao {
-              flex: 0 0 200px;
+              flex: 0 0 180px;
+            }
+            &.price {
+              flex: 0 0 160px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              .total {
+                color: #d22a39;
+              }
             }
           }
           &.list-enter-active, &.list-leave-active {
@@ -737,15 +741,6 @@
           background: #333;
           color: #999;
           font-size: 24px;
-        }
-        .progress {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: -1;
-          background: #ffb400;
-          transition: all .3s;
         }
       }
       .bet-info {
